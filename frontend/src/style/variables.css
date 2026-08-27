@@ -1,0 +1,187 @@
+/* ==========================================================================
+   DESIGN TOKENS & DARK PALETTE
+   #1A0B07 Background | #29140D Surface | #4A2419 Primary Brown | #774936 Brown Accent
+   #D9BE8F Secondary Text | #FFF1C9 Primary Text | #F4B942 ⭐ Accent
+   ========================================================================== */
+:root {
+  --bg-main: #1A0B07;
+  --bg-surface: #29140D;
+  --bg-card: #29140D;
+  --bg-card-hover: #381c12;
+  --bg-input: #1f0e09;
+  
+  --border-subtle: #3a1b12;
+  --border-muted: #4A2419;
+  --border-accent: #774936;
+  --border-glow: rgba(244, 185, 66, 0.35);
+
+  --primary: #774936;
+  --primary-hover: #8c5741;
+  --primary-active: #4A2419;
+
+  --accent-gold: #C78E3A;
+  --accent-mint: #C78E3A; /* Alias for backwards compatibility */
+  --accent-subtle: rgba(199, 142, 58, 0.15);
+  --accent-mint-subtle: rgba(199, 142, 58, 0.15);
+  --accent-hover: #db9f44;
+  --accent-mint-hover: #db9f44;
+
+  --text-heading: #FFF1C9;
+  --text-body: #FFF1C9;
+  --text-muted: #D9BE8F;
+  --text-disabled: #8a7556;
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  --font-heading: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px rgba(199, 142, 58, 0.25);
+}
+
+/* ==========================================================================
+   GLOBAL RESET & TYPOGRAPHY
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  background-color: var(--bg-main);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* Subtle / Faded Global Scrollbar without arrows */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(217, 190, 143, 0.16);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(244, 185, 66, 0.35);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 190, 143, 0.16) transparent;
+}
+
+h1, h2, h3, h4, h5, h6,
+strong, b {
+  font-family: var(--font-heading);
+  color: var(--text-heading);
+  letter-spacing: -0.015em;
+}
+
+p, span, label, input, textarea, select, button, table, td, th {
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--accent-gold);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+a:hover {
+  color: #ffffff;
+}
+
+/* Base form controls & buttons */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: var(--accent-mint);
+}
+
+.form-group textarea, .form-group input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-sm);
+  color: var(--text-heading);
+  font-family: var(--font-body);
+  box-sizing: border-box;
+  outline: none;
+}
+.form-group textarea:focus, .form-group input:focus {
+  border-color: var(--accent-mint);
+  box-shadow: 0 0 0 3px var(--accent-mint-subtle);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+  border: 1px solid var(--border-accent);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  color: var(--accent-mint);
+  border-color: var(--accent-mint);
+}
+.btn-primary:disabled {
+  background-color: var(--border-muted);
+  color: var(--text-disabled);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* Common Test Container */
+.test-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

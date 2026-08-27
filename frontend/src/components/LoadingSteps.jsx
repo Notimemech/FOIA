@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 const steps = [
-  { id: 1, label: 'Đang gửi bài nộp...', duration: 1000 },
-  { id: 2, label: 'Model 1 đang viết lại bài mẫu...', duration: 3000 },
-  { id: 3, label: 'Model 1 đang tự chấm điểm...', duration: 2500 },
-  { id: 4, label: 'Model 2 đang chấm chéo (Cross-check)...', duration: 3500 },
-  { id: 5, label: 'Đang so sánh điểm và tổng hợp nhận xét...', duration: 2000 }
+  { id: 1, label: 'Submitting response to examination server...', duration: 1000 },
+  { id: 2, label: 'Evaluating grammar, lexical density & cohesion...', duration: 3000 },
+  { id: 3, label: 'Benchmarking against Target Band descriptors...', duration: 2500 },
+  { id: 4, label: 'Generating detailed sub-criteria feedback...', duration: 3500 },
+  { id: 5, label: 'Synthesizing action items & model sample essay...', duration: 2000 }
 ];
 
 function LoadingSteps() {
@@ -44,7 +44,7 @@ function LoadingSteps() {
   return (
     <div className="loading-container">
       <div className="loading-spinner"></div>
-      <h3 style={{ textAlign: 'center', marginTop: '1rem' }}>Hệ thống đang chấm bài của bạn...</h3>
+      <h3 style={{ textAlign: 'center', marginTop: '1rem' }}>AI Examiner is grading your submission...</h3>
       
       <div className="steps-container">
         {steps.map((step, index) => {

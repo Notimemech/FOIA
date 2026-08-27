@@ -1,288 +1,421 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import LoadingSteps from '../components/LoadingSteps';
 
-const WRITING_CRITERIA = [
-  'Task Response',
-  'Coherence & Cohesion',
-  'Lexical Resource',
-  'Grammatical Range & Accuracy',
-];
-
-const CATEGORY_META = {
-  'Task Response': {
-    shortName: 'Task',
-    subKey: 'TR',
-    icon: '🎓',
-    description: 'Task Response: Đánh giá khả năng trả lời đúng câu hỏi, phát triển ý tưởng và lập luận phù hợp.',
-  },
-  'Coherence & Cohesion': {
-    shortName: 'Coherence',
-    subKey: 'CC',
-    icon: '🔗',
-    description: 'Coherence & Cohesion: Đánh giá khả năng tổ chức bài viết mạch lạc, sử dụng từ nối và liên kết ý tưởng.',
-  },
-  'Lexical Resource': {
-    shortName: 'Lexical',
-    subKey: 'LR',
-    icon: '✦',
-    description: 'Lexical Resource: Đánh giá phạm vi từ vựng, độ chính xác và sự phù hợp trong sử dụng từ.',
-  },
-  'Grammatical Range & Accuracy': {
-    shortName: 'Grammar',
-    subKey: 'GRA',
-    icon: '📝',
-    description: 'Grammatical Range & Accuracy: Đánh giá phạm vi cấu trúc ngữ pháp và độ chính xác.',
-  },
-};
-
 function WritingTest() {
-  const [prompt, setPrompt] = useState(
-    'Some people think that in the future, driverless cars will be the norm. Is this a positive or negative development?'
-  );
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine Task & Mode from query params or URL pathname
+  const searchParams = new URLSearchParams(location.search);
+  const isTask1 = location.pathname.includes('task1') || searchParams.get('task') === 'task1';
+  const partType = isTask1 ? 'Task 1' : 'Task 2';
+  const initialMode = searchParams.get('mode') || 'practice';
+
+  const defaultPrompt = isTask1
+    ? 'The chart below shows the percentage of households in a European country with internet access between 2005 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.'
+    : 'Some people think that in the future, driverless cars will be the norm. Is this a positive or negative development? Give reasons for your answer and include any relevant examples from your own knowledge or experience.';
+
+  // State
+  const [step, setStep] = useState('setup'); // 'setup' | 'writing'
+  const [mode, setMode] = useState(initialMode); // 'practice' | 'exam'
+  const [prompt, setPrompt] = useState(defaultPrompt);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageUploading, setImageUploading] = useState(false);
+  const [targetBand, setTargetBand] = useState(7.0);
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('Task Response');
-  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  const wordCount = answer.split(/\s+/).filter((w) => w.length > 0).length;
+  // Timer: 20 mins for Task 1, 40 mins for Task 2
+  const examDurationSeconds = isTask1 ? 20 * 60 : 40 * 60;
+  const [secondsRemaining, setSecondsRemaining] = useState(examDurationSeconds);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef(null);
 
-  const handleSubmit = async (e) => {
+  // Word count & targets
+  const minWords = isTask1 ? 150 : 250;
+  const wordCount = answer.trim() ? answer.trim().split(/\s+/).length : 0;
+  const isWordTargetMet = wordCount >= minWords;
+
+  // Timer Effect (only runs when step === 'writing')
+  useEffect(() => {
+    if (step !== 'writing') return;
+
+    if (mode === 'exam') {
+      setSecondsRemaining(examDurationSeconds);
+      timerRef.current = setInterval(() => {
+        setSecondsRemaining((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            alert('⏱️ Time is up! Your essay will now be submitted for assessment.');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      setElapsedSeconds(0);
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [step, mode, examDurationSeconds]);
+
+  // Format time MM:SS
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Image Upload handler
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setImageUploading(true);
+    try {
+      const res = await axios.post('http://localhost:5000/api/assessments/upload-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setImageUrl(res.data.imageUrl);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload image. Please try again or paste an image URL directly.');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  // Start Writing
+  const handleStartWriting = (e) => {
     e.preventDefault();
+    if (!prompt.trim()) {
+      alert('Please enter a task prompt before starting.');
+      return;
+    }
+    setStep('writing');
+  };
+
+  // Submit assessment
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!answer.trim()) {
+      alert('Please write your essay before submitting.');
+      return;
+    }
+
+    if (timerRef.current) clearInterval(timerRef.current);
     setLoading(true);
-    setResult(null);
+
     try {
       const res = await axios.post('http://localhost:5000/api/assessments/submit', {
         skill: 'writing',
-        part_type: 'Task 2',
+        part_type: partType,
         task_prompt: prompt,
         user_input_text: answer,
+        target_band: Number(targetBand),
+        image_url: imageUrl || null,
       });
-      // Artificial delay to show loading animation fully (12s)
+
       setTimeout(() => {
-        const data = res.data;
-        // Debug: log toàn bộ response để kiểm tra cấu trúc
-        console.log('[WritingTest] API result:', JSON.stringify(data, null, 2));
-        setResult(data);
-        setActiveCategory('Task Response');
-        setLoading(false);
-      }, 12000);
+        navigate(`/writing/result/${res.data.id}`);
+      }, 9000);
     } catch (error) {
       console.error(error);
-      alert('Có lỗi xảy ra khi nộp bài');
+      alert('An error occurred during submission. Please try again.');
       setLoading(false);
     }
   };
 
-  const getSubScore = (category) => {
-    const meta = CATEGORY_META[category];
-    if (!meta || !result?.sub_scores) return '—';
-    return result.sub_scores[meta.subKey] ?? '—';
-  };
-
-  // Tìm feedback theo category — thử exact match trước, fallback tìm fuzzy
-  const getActiveFeedback = (category) => {
-    if (!result?.feedback) return null;
-    if (result.feedback[category]) return result.feedback[category];
-    // Fallback: tìm key gần đúng (ignore case, ignore & vs and)
-    const normalize = (s) => s.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, ' ').trim();
-    const normCat = normalize(category);
-    const match = Object.keys(result.feedback).find(
-      (k) => normalize(k) === normCat
+  // ── Loading state ──
+  if (loading) {
+    return (
+      <div className="wt-container">
+        <LoadingSteps />
+      </div>
     );
-    return match ? result.feedback[match] : null;
-  };
-
-  const activeFeedback = getActiveFeedback(activeCategory);
-  const activeMeta = CATEGORY_META[activeCategory];
+  }
 
   return (
-    <div className="test-container">
-      <h2>IELTS Writing Task 2</h2>
+    <div className="wt-container">
+      {/* ── Top Bar ── */}
+      <div className="wt-topbar">
+        <Link to="/writing" className="wt-back-link">← Back to Writing Hub</Link>
+        <div className="wt-topbar-center">
+          <span className="wt-part-tag">{partType}</span>
+          <span className={`wt-mode-tag ${mode === 'exam' ? 'exam' : 'practice'}`}>
+            {mode === 'exam' ? `⏱️ Exam Simulation (${isTask1 ? '20' : '40'} mins)` : '🌱 Practice Mode'}
+          </span>
+        </div>
+        <div className="wt-target-tag">🎯 Target: Band {Number(targetBand).toFixed(1)}</div>
+      </div>
 
-      {/* ── Input Form ── */}
-      {!loading && !result && (
-        <>
-          <div className="form-group">
-            <label>Đề bài:</label>
-            <div className="prompt-box">{prompt}</div>
+      {/* ────────────────────────────────────────── */}
+      {/* STEP 1: SETUP & PROMPT INPUT FORM         */}
+      {/* ────────────────────────────────────────── */}
+      {step === 'setup' && (
+        <div className="wt-setup-card">
+          <div className="wt-setup-header">
+            <h2>Setup Your Session: IELTS Writing {partType}</h2>
+            <p>Input your task prompt, attach visual diagrams (for Task 1 if applicable), and specify your Target Band benchmark.</p>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Bài làm của bạn:</label>
+          <form onSubmit={handleStartWriting} className="wt-setup-form">
+            {/* Mode selection */}
+            <div className="wt-form-group">
+              <label className="wt-label">Testing Mode:</label>
+              <div className="wt-mode-selector-inline">
+                <button
+                  type="button"
+                  className={`wt-mode-choice ${mode === 'practice' ? 'active' : ''}`}
+                  onClick={() => setMode('practice')}
+                >
+                  <div className="wt-choice-title">🌱 Practice Mode</div>
+                  <div className="wt-choice-desc">No countdown pressure. Write freely at your own pace.</div>
+                </button>
+                <button
+                  type="button"
+                  className={`wt-mode-choice ${mode === 'exam' ? 'active' : ''}`}
+                  onClick={() => setMode('exam')}
+                >
+                  <div className="wt-choice-title">⏱️ Exam Simulation</div>
+                  <div className="wt-choice-desc">Strict {isTask1 ? '20-minute' : '40-minute'} timer starts upon clicking begin.</div>
+                </button>
+              </div>
+            </div>
+
+            {/* Target Band selection */}
+            <div className="wt-form-group">
+              <label className="wt-label" htmlFor="targetBandSelect">
+                Target Band Benchmark (Minimum evaluation criteria for AI scoring):
+              </label>
+              <div className="wt-target-select-wrapper">
+                <select
+                  id="targetBandSelect"
+                  value={targetBand}
+                  onChange={(e) => setTargetBand(parseFloat(e.target.value))}
+                  className="wt-select"
+                >
+                  {[5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0].map((b) => (
+                    <option key={b} value={b}>Band {b.toFixed(1)}</option>
+                  ))}
+                </select>
+                <span className="wt-target-hint">
+                  💡 AI will benchmark your vocabulary, grammar, and coherence directly against Band {Number(targetBand).toFixed(1)} descriptors.
+                </span>
+              </div>
+            </div>
+
+            {/* Prompt Input */}
+            <div className="wt-form-group">
+              <label className="wt-label" htmlFor="taskPrompt">
+                Task Prompt ({partType}):
+              </label>
               <textarea
-                rows="15"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Viết bài làm của bạn vào đây..."
+                id="taskPrompt"
+                rows="5"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Enter your IELTS Writing task prompt here..."
+                className="wt-textarea"
                 required
               />
-              <div className="word-count">{wordCount} words</div>
             </div>
 
-            <button type="submit" className="btn-primary" disabled={!answer}>
-              Nộp bài &amp; Chấm điểm
-            </button>
+            {/* Task 1 Image upload/URL */}
+            {isTask1 && (
+              <div className="wt-form-group">
+                <label className="wt-label">
+                  Chart / Map / Diagram Image (Task 1):
+                </label>
+                <div className="wt-image-uploader">
+                  <div className="wt-upload-actions">
+                    <label className="wt-upload-btn">
+                      📁 Upload Local Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                    <span className="wt-or-text">or paste image URL:</span>
+                    <input
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="https://example.com/chart.png"
+                      className="wt-input"
+                    />
+                  </div>
+                  {imageUploading && <div className="wt-uploading">Uploading image...</div>}
+                  {imageUrl && (
+                    <div className="wt-image-preview">
+                      <img src={imageUrl} alt="Task 1 Chart" />
+                      <button
+                        type="button"
+                        className="wt-remove-img-btn"
+                        onClick={() => setImageUrl('')}
+                        title="Remove image"
+                      >
+                        ✕ Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Start Button */}
+            <div className="wt-setup-submit">
+              <button type="submit" className="wt-btn-start">
+                🚀 Begin Writing ({partType})
+              </button>
+            </div>
           </form>
-        </>
+        </div>
       )}
 
-      {/* ── Loading ── */}
-      {loading && <LoadingSteps />}
+      {/* ────────────────────────────────────────── */}
+      {/* STEP 2: WRITING WORKSPACE (Side-by-Side)   */}
+      {/* ────────────────────────────────────────── */}
+      {step === 'writing' && (
+        <div className="wt-workspace">
+          {/* Top Timer Bar */}
+          <div className="wt-timer-strip">
+            <div className="wt-timer-info">
+              {mode === 'exam' ? (
+                <div className={`wt-timer-display ${secondsRemaining < 300 ? 'warning' : ''}`}>
+                  ⏱️ Time Remaining: <strong>{formatTime(secondsRemaining)}</strong>
+                </div>
+              ) : (
+                <div className="wt-timer-display practice">
+                  🌱 Elapsed Time: <strong>{formatTime(elapsedSeconds)}</strong>
+                </div>
+              )}
+            </div>
 
-      {/* ── Result ── */}
-      {result && !loading && (
-        <div className="review-wrapper">
-          {/* Header */}
-          <div className="review-header">
-            <h3 className="review-title">Nhận xét</h3>
-            <div className="overall-score-badge">
-              <span className="overall-score-value">{result.overall_band}</span>
-              <span className="overall-score-label">Band</span>
+            <div className="wt-word-indicator">
+              Word count: <strong className={isWordTargetMet ? 'met' : 'unmet'}>{wordCount}</strong> / {minWords} minimum words
+              {isWordTargetMet && <span className="wt-word-badge-ok"> ✓ Requirement Met</span>}
             </div>
           </div>
 
-          {/* Category Tabs */}
-          <div className="category-tabs">
-            {WRITING_CRITERIA.map((cat) => {
-              const meta = CATEGORY_META[cat];
-              const score = getSubScore(cat);
-              const isActive = activeCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  className={`category-tab ${isActive ? 'active' : ''}`}
-                  onClick={() => setActiveCategory(cat)}
-                >
-                  <span className="category-tab-name">{meta.shortName}</span>
-                  <span className="category-tab-score">{score}</span>
-                </button>
-              );
-            })}
-          </div>
+          {/* 2-Column Layout */}
+          <div className="wt-split-pane">
+            
+            {/* LEFT: Prompt & Chart */}
+            <div className="wt-pane-left">
+              <div className="wt-prompt-card">
+                <div className="wt-pane-header">
+                  <h3>📌 Task Prompt ({partType})</h3>
+                  <button
+                    type="button"
+                    className="wt-btn-edit-prompt"
+                    onClick={() => setStep('setup')}
+                    title="Edit prompt or session settings"
+                  >
+                    ✏️ Edit Prompt
+                  </button>
+                </div>
+                <div className="wt-prompt-text">{prompt}</div>
 
-          {/* Category Description Card */}
-          {activeMeta && (
-            <div className="category-desc-card">
-              <span className="category-desc-icon">{activeMeta.icon}</span>
-              <span className="category-desc-text">{activeMeta.description}</span>
-            </div>
-          )}
-
-          {/* Sub-Criteria List */}
-          {activeFeedback ? (
-            <div className="criteria-list">
-              {Object.entries(activeFeedback).map(([critName, critDetails]) => {
-                // Bỏ qua nếu không phải object tiêu chí con hợp lệ
-                if (
-                  !critDetails ||
-                  typeof critDetails !== 'object' ||
-                  Array.isArray(critDetails)
-                ) return null;
-                // Hỗ trợ cả "score" và "band" (AI có thể dùng khác key)
-                const score = critDetails.score ?? critDetails.band ?? critDetails.Score;
-                const comment = critDetails.comment ?? critDetails.feedback ?? critDetails.Comment ?? '';
-                if (score === undefined) return null;
-                return (
-                  <div key={critName} className="criterion-card">
-                    <div className="criterion-card-header">
-                      <span className="criterion-card-title">{critName}</span>
-                      <span className="criterion-card-score">{Number(score).toFixed(1)}</span>
+                {/* Image if available */}
+                {imageUrl && (
+                  <div className="wt-prompt-image-container">
+                    <img
+                      src={imageUrl}
+                      alt="Task 1 Chart"
+                      className="wt-prompt-image"
+                      onClick={() => setLightboxOpen(true)}
+                      title="Click to expand chart"
+                    />
+                    <div className="wt-image-hint" onClick={() => setLightboxOpen(true)}>
+                      🔍 Click image to view in full resolution
                     </div>
-                    <p className="criterion-card-comment">{comment}</p>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            // Debug: hiển thị cấu trúc feedback nếu không tìm thấy
-            <div style={{ padding: '1rem', color: '#e74c3c', fontSize: '0.85rem' }}>
-              <strong>Debug:</strong> Không tìm thấy feedback cho "{activeCategory}".<br />
-              Các key hiện có: {result?.feedback ? Object.keys(result.feedback).join(', ') : 'không có'}
-            </div>
-          )}
+                )}
 
-          {/* Bottom CTA */}
-          <div className="review-footer">
-            <button
-              className="btn-view-analysis"
-              onClick={() => setShowDetailModal(true)}
-            >
-              <span>📄</span> Xem phân tích chi tiết
-            </button>
+                <div className="wt-prompt-footer">
+                  <div className="wt-reminder-item">
+                    <span>🎯 Target Band:</span> <strong>{Number(targetBand).toFixed(1)}</strong>
+                  </div>
+                  <div className="wt-reminder-item">
+                    <span>📝 Length:</span> <strong>Min {minWords} words</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Editor */}
+            <div className="wt-pane-right">
+              <form onSubmit={handleSubmit} className="wt-editor-form">
+                <div className="wt-editor-header">
+                  <h3>✍️ Candidate Response</h3>
+                  <div className="wt-word-live">
+                    {wordCount} words
+                  </div>
+                </div>
+
+                <textarea
+                  className="wt-editor-textarea"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder={`Start composing your ${partType} response here...`}
+                  autoFocus
+                  required
+                />
+
+                <div className="wt-editor-actions">
+                  <div className="wt-word-status">
+                    {wordCount < minWords ? (
+                      <span className="wt-status-warning">
+                        ⚠️ Need {minWords - wordCount} more words to reach recommended minimum ({minWords} words).
+                      </span>
+                    ) : (
+                      <span className="wt-status-success">
+                        🎉 Word count requirement achieved ({wordCount} / {minWords} words).
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="wt-btn-submit"
+                    disabled={!answer.trim() || loading}
+                  >
+                    Submit &amp; Evaluate with AI
+                  </button>
+                </div>
+              </form>
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* ── Detail Modal ── */}
-      {showDetailModal && result && (
-        <div className="modal-overlay" onClick={() => setShowDetailModal(false)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Phân tích chi tiết</h3>
-              <button className="modal-close" onClick={() => setShowDetailModal(false)}>✕</button>
-            </div>
-
-            <div className="modal-body">
-              {/* All categories */}
-              {WRITING_CRITERIA.map((cat) => {
-                const catFeedback = result.feedback?.[cat];
-                if (!catFeedback) return null;
-                const meta = CATEGORY_META[cat];
-                return (
-                  <div key={cat} className="modal-category">
-                    <div className="modal-category-header">
-                      <span>{meta.icon} {cat}</span>
-                      <span className="criterion-card-score">{getSubScore(cat)}</span>
-                    </div>
-                    {Object.entries(catFeedback).map(([critName, critDetails]) => {
-                      if (!critDetails || typeof critDetails !== 'object' || critDetails.score === undefined) return null;
-                      return (
-                        <div key={critName} className="criterion-card">
-                          <div className="criterion-card-header">
-                            <span className="criterion-card-title">{critName}</span>
-                            <span className="criterion-card-score">{Number(critDetails.score).toFixed(1)}</span>
-                          </div>
-                          <p className="criterion-card-comment">{critDetails.comment}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-
-              {/* Improvements */}
-              {result.feedback?.improvements?.length > 0 && (
-                <div className="modal-improvements">
-                  <h4>💡 Gợi ý cải thiện</h4>
-                  {result.feedback.improvements.map((imp, idx) => (
-                    <div key={idx} className="improvement-card">
-                      <div className="improvement-title">{imp.title}</div>
-                      <div className="improvement-content">{imp.content}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Sample Rewrite */}
-              {result.feedback?.sample_rewrite && (
-                <div className="modal-rewrite">
-                  <h4>✍️ Bài mẫu tham khảo</h4>
-                  <p>{result.feedback.sample_rewrite}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="modal-footer">
-              <button
-                className="btn-primary"
-                onClick={() => { setShowDetailModal(false); setResult(null); setAnswer(''); }}
-              >
-                Làm bài khác
-              </button>
-            </div>
+      {/* ── Image Lightbox ── */}
+      {lightboxOpen && imageUrl && (
+        <div className="wt-lightbox" onClick={() => setLightboxOpen(false)}>
+          <div className="wt-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <img src={imageUrl} alt="Task 1 Full Chart" />
+            <button
+              type="button"
+              className="wt-lightbox-close"
+              onClick={() => setLightboxOpen(false)}
+            >
+              ✕ Close
+            </button>
           </div>
         </div>
       )}

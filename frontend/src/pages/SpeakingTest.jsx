@@ -33,7 +33,7 @@ function SpeakingTest() {
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Không thể truy cập microphone. Vui lòng cấp quyền.");
+      alert("Unable to access microphone. Please grant audio permissions.");
     }
   };
 
@@ -68,7 +68,7 @@ function SpeakingTest() {
       }, 12000);
     } catch (error) {
       console.error(error);
-      alert('Có lỗi xảy ra khi nộp bài');
+      alert('An error occurred during submission. Please try again.');
       setLoading(false);
     }
   };
@@ -80,29 +80,29 @@ function SpeakingTest() {
       {!loading && !result && (
         <>
           <div className="form-group">
-            <label>Chủ đề:</label>
-            <div style={{ padding: '1rem', backgroundColor: '#f9f9f9', borderLeft: '4px solid #f39c12' }}>
+            <label>Topic Prompt:</label>
+            <div style={{ padding: '1rem', backgroundColor: 'var(--bg-surface)', borderLeft: '4px solid var(--border-accent)', borderRadius: '4px' }}>
               {prompt}
             </div>
           </div>
 
           <div className="form-group" style={{ textAlign: 'center', margin: '2rem 0' }}>
             {!isRecording ? (
-              <button onClick={startRecording} className="btn-primary" style={{ backgroundColor: '#e74c3c' }}>
-                🎤 Bắt đầu Ghi âm
+              <button onClick={startRecording} className="btn-primary">
+                🎤 Start Recording
               </button>
             ) : (
-              <button onClick={stopRecording} className="btn-primary" style={{ backgroundColor: '#c0392b' }}>
-                ⏹ Dừng Ghi âm (Đang ghi...)
+              <button onClick={stopRecording} className="btn-primary" style={{ backgroundColor: '#ef4444', borderColor: '#f87171' }}>
+                ⏹ Stop Recording (Recording in progress...)
               </button>
             )}
             
             {audioBlob && !isRecording && (
-              <div style={{ marginTop: '1rem' }}>
+              <div style={{ marginTop: '1.25rem' }}>
                 <audio src={URL.createObjectURL(audioBlob)} controls style={{ width: '100%', maxWidth: '400px' }}></audio>
                 <div style={{ marginTop: '1rem' }}>
                   <button onClick={handleSubmit} className="btn-primary" disabled={loading}>
-                    Nộp bài & Chấm điểm
+                    Submit &amp; Evaluate
                   </button>
                 </div>
               </div>
@@ -116,10 +116,10 @@ function SpeakingTest() {
       {result && !loading && (
         <div className="result-section" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3>Chi tiết điểm số</h3>
+            <h3>Score Breakdown</h3>
             <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1abc9c' }}>{result.overall_band}</span>
-              <div style={{ fontSize: '0.9rem', color: '#666' }}>Điểm tổng</div>
+              <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-mint)' }}>{result.overall_band}</span>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Overall Band</div>
             </div>
           </div>
 
@@ -137,9 +137,11 @@ function SpeakingTest() {
           </div>
           
           <div className="feedback-section" style={{ marginTop: '2rem' }}>
-            <h4>Nhận xét & Cải thiện</h4>
+            <h4>Feedback &amp; Action Items</h4>
             {result.feedback?.improvements?.map((imp, idx) => (
-              <div key={idx} className="feedback-item">{imp}</div>
+              <div key={idx} className="wr-improvement" style={{ marginBottom: '0.75rem' }}>
+                {typeof imp === 'string' ? imp : imp.content || imp.title}
+              </div>
             ))}
           </div>
           
@@ -148,7 +150,7 @@ function SpeakingTest() {
               setResult(null); 
               setAudioBlob(null);
             }}>
-              Làm bài khác
+              Practice Another Topic
             </button>
           </div>
         </div>

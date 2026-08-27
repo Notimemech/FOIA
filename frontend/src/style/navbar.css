@@ -1,0 +1,58 @@
+/* ==========================================================================
+   APP LAYOUT & NAVBAR
+   ========================================================================== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+}
+
+.navbar {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-muted);
+  padding: 0.85rem 1rem; /* Halved left-right margin/padding */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.navbar h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--accent-mint);
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.nav-links a:hover {
+  color: var(--accent-mint);
+  background-color: var(--accent-mint-subtle);
+}
+
+.main-content {
+  padding: 1.25rem 0.75rem; /* Halved side margin from 2rem/1.5rem */
+  max-width: 1560px;        /* Expanded width to reduce empty side margins */
+  margin: 0 auto;
+  width: 100%;
+  flex-grow: 1;
+}

@@ -1,0 +1,42 @@
+/* ==========================================================================
+   SPEAKING TEST STYLES
+   ========================================================================== */
+.score-box-detailed {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.score-item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-muted);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.score-item .label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-heading);
+}
+
+.score-item .score-value {
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: var(--accent-mint);
+  font-family: var(--font-heading);
+}
+
+.feedback-item {
+  background: var(--bg-surface);
+  border-left: 4px solid var(--border-accent);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
