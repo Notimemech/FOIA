@@ -4,7 +4,10 @@ import WritingHub from './pages/WritingHub';
 import WritingTest from './pages/WritingTest';
 import WritingFullTest from './pages/WritingFullTest';
 import WritingResult from './pages/WritingResult';
+import SpeakingHub from './pages/SpeakingHub';
 import SpeakingTest from './pages/SpeakingTest';
+import SpeakingResult from './pages/SpeakingResult';
+import SpeakingDetailAnalysis from './pages/SpeakingDetailAnalysis';
 import History from './pages/History';
 import HistoryDetail from './pages/HistoryDetail';
 import './index.css';
@@ -31,7 +34,10 @@ function App() {
             <Route path="/writing/task2" element={<WritingTest />} />
             <Route path="/writing/fulltest" element={<WritingFullTest />} />
             <Route path="/writing/result/:id" element={<WritingResult />} />
-            <Route path="/speaking" element={<SpeakingTest />} />
+            <Route path="/speaking" element={<SpeakingHub />} />
+            <Route path="/speaking/test" element={<SpeakingTest />} />
+            <Route path="/speaking/result/:id" element={<SpeakingResult />} />
+            <Route path="/speaking/detail/:id" element={<SpeakingDetailAnalysis />} />
             <Route path="/history" element={<History />} />
             <Route path="/history/:id" element={<HistoryDetail />} />
           </Routes>

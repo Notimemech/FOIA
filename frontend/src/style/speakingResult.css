@@ -1,0 +1,276 @@
+/* ==========================================================================
+   SPEAKING RESULT STYLES (MATCHING WRITING RESULT DESIGN SYSTEM)
+   ========================================================================== */
+
+/* Top bar question speak button */
+.wr-essay-label-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.sp-btn-speak-q {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-accent);
+  color: var(--accent-mint);
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-heading);
+}
+.sp-btn-speak-q:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* ==========================================================================
+   VERTICAL QUESTIONS LIST (WITH DETAILED ANALYSIS BUTTON)
+   ========================================================================== */
+.sp-questions-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sp-q-vertical-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.15rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.sp-q-vertical-item:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-card-hover);
+  transform: translateX(3px);
+}
+
+.sp-q-vertical-item.active {
+  border-color: var(--accent-mint);
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 0 0 1.5px var(--accent-mint);
+}
+
+.sp-q-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.sp-q-index-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-muted);
+  color: var(--text-heading);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  font-family: var(--font-heading);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.sp-q-vertical-item.active .sp-q-index-circle {
+  background: var(--accent-mint);
+  border-color: var(--accent-mint);
+  color: #0f172a;
+}
+
+.sp-q-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.sp-btn-detailed-analysis {
+  background: var(--primary);
+  color: #ffffff;
+  border: 1px solid var(--border-accent);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-heading);
+  flex-shrink: 0;
+}
+
+.sp-btn-detailed-analysis:hover {
+  background: var(--primary-hover);
+  color: var(--accent-mint);
+}
+
+.sp-q-vertical-item.active .sp-btn-detailed-analysis {
+  background: var(--accent-mint);
+  border-color: var(--accent-mint);
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   AUDIO PLAYER & TRANSCRIPT SECTIONS
+   ========================================================================== */
+.sp-audio-player-wrapper {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.sp-audio-player-label {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--accent-mint);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-heading);
+}
+
+/* ==========================================================================
+   EXAMINER TRIANGULATION STRATEGY BANNER
+   ========================================================================== */
+.sp-triangulation-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+
+.sp-triangulation-header {
+  margin-bottom: 1rem;
+}
+
+.sp-tri-badge {
+  display: inline-block;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-heading);
+}
+
+.sp-triangulation-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-heading);
+}
+
+.sp-triangulation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.sp-tri-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sp-tri-card.ceiling {
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.04);
+}
+.sp-tri-card.floor {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.04);
+}
+.sp-tri-card.calibration {
+  border: 1.5px solid var(--accent-gold);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.sp-tri-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sp-tri-card-tag {
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+}
+
+.sp-tri-card-band {
+  font-size: 0.86rem;
+  color: var(--text-heading);
+  font-family: var(--font-heading);
+}
+
+.sp-tri-card.ceiling .sp-tri-card-band strong { color: var(--accent-mint); }
+.sp-tri-card.floor .sp-tri-card-band strong { color: #f87171; }
+.sp-tri-card.calibration .sp-tri-card-band strong { color: var(--accent-gold); }
+
+.sp-tri-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-body);
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .sp-triangulation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sp-audio-player-el {
+  width: 100%;
+  height: 40px;
+}
+
+.sp-no-audio-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.sp-transcript-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sp-transcript-label {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--text-heading);
+  font-family: var(--font-heading);
+}

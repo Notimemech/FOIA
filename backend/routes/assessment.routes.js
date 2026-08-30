@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-router.post('/submit', upload.single('audio'), assessmentController.submitAssessment);
+router.post('/submit', upload.any(), assessmentController.submitAssessment);
 router.post('/upload-image', upload.single('image'), assessmentController.uploadImage);
 router.post('/generate-sample', assessmentController.generateSampleEssay);
 router.post('/:id/generate-sample', assessmentController.generateSampleEssay);

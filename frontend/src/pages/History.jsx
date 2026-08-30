@@ -204,14 +204,15 @@ function History() {
             <tbody>
               {filteredList.map((item) => {
                 const isWriting = item.skill === 'writing';
-                const detailUrl = isWriting
-                  ? `/writing/result/${item.id}`
-                  : `/history/${item.id}`;
+                const isSpeaking = item.skill === 'speaking';
+                const detailUrl = isSpeaking
+                  ? `/speaking/result/${item.id}`
+                  : (isWriting ? `/writing/result/${item.id}` : `/history/${item.id}`);
 
                 const { dateTime, time } = formatDate(item.created_at);
 
                 const isFullTest = item.part_type === 'Full Test';
-                const testTitle = item.feedback?.test_name || (isFullTest ? 'IELTS Full Writing Test' : `IELTS Writing ${item.part_type || ''}`);
+                const testTitle = item.feedback?.test_name || (isSpeaking ? `IELTS Speaking ${item.part_type || ''}` : (isFullTest ? 'IELTS Full Writing Test' : `IELTS Writing ${item.part_type || ''}`));
                 const isRealExam = item.feedback?.is_real_exam || item.feedback?.isRealExam;
 
                 const overall = Number(item.overall_band || 0);
@@ -223,7 +224,7 @@ function History() {
                     {/* 1. Bài thi */}
                     <td>
                       <div className="hs-cell-test">
-                        <div className="hs-test-icon">📄</div>
+                        <div className="hs-test-icon">{isSpeaking ? '🎙️' : '📄'}</div>
                         <div className="hs-test-info">
                           <span className="hs-test-name">{testTitle}</span>
                           <span className="hs-test-category">

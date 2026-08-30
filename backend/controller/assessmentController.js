@@ -69,9 +69,49 @@ exports.submitAssessment = async (req, res) => {
             task1_image,
             task2_prompt,
             task2_input,
+            questions_json,
         } = req.body;
 
-        const audio_path = req.file ? `/uploads/${req.file.filename}` : null;
+        let mainAudioFile = null;
+        const filesMap = {};
+
+        if (req.files && Array.isArray(req.files)) {
+            req.files.forEach(f => {
+                filesMap[f.fieldname] = `/uploads/${f.filename}`;
+                if (f.fieldname === 'audio') {
+                    mainAudioFile = f;
+                }
+            });
+            if (!mainAudioFile && req.files.length > 0) {
+                mainAudioFile = req.files[0];
+            }
+        } else if (req.file) {
+            mainAudioFile = req.file;
+            filesMap['audio'] = `/uploads/${req.file.filename}`;
+        }
+
+        const audio_path = mainAudioFile ? `/uploads/${mainAudioFile.filename}` : null;
+
+        // Parse per-question data if provided
+        let questionsData = [];
+        if (questions_json) {
+            try {
+                const rawList = typeof questions_json === 'string' ? JSON.parse(questions_json) : questions_json;
+                questionsData = rawList.map((q, idx) => {
+                    const fieldKey = q.audio_field || `audio_${q.id || q.key || idx}`;
+                    return {
+                        id: q.id || `q_${idx + 1}`,
+                        title: q.title || `Question ${idx + 1}`,
+                        part: q.part || part_type,
+                        question: q.question || q.text || '',
+                        audio_url: filesMap[fieldKey] || filesMap[q.id] || filesMap['audio'] || null,
+                        transcript: q.transcript || '',
+                    };
+                });
+            } catch (e) {
+                console.warn('[Questions JSON parse warning]:', e.message);
+            }
+        }
 
         const effectivePrompt = task_prompt || (part_type === 'Full Test' 
             ? `Task 1: ${task1_prompt || ''}\n\nTask 2: ${task2_prompt || ''}`
@@ -108,7 +148,7 @@ exports.submitAssessment = async (req, res) => {
             skill, 
             effectivePrompt, 
             effectiveInput, 
-            audio_path ? req.file.path : null,
+            mainAudioFile ? mainAudioFile.path : null,
             {
                 part_type,
                 target_band: Number(target_band) || 7.0,
@@ -121,12 +161,27 @@ exports.submitAssessment = async (req, res) => {
             }
         );
 
+        // Đính kèm transcript riêng cho từng câu hỏi từ AI
+        const aiTranscripts = aiResult.feedback?.questions_transcripts || [];
+        const finalQuestionsData = questionsData.map((q, idx) => {
+            const matched = aiTranscripts.find(
+                (t) => t.question_number === (idx + 1) || (t.question && q.question && t.question.toLowerCase().includes(q.question.toLowerCase().slice(0, 15)))
+            ) || aiTranscripts[idx];
+
+            return {
+                ...q,
+                transcript: matched?.transcript || q.transcript || '',
+            };
+        });
+
         // Đính kèm metadata mở rộng vào feedback để frontend render đầy đủ
         const enrichedFeedback = {
             ...aiResult.feedback,
             target_band: Number(target_band) || 7.0,
             part_type,
             image_url: image_url || task1_image || null,
+            questions_data: finalQuestionsData.length > 0 ? finalQuestionsData : (aiResult.feedback?.questions_data || null),
+            question_audios: filesMap,
             task1: aiResult.task1 || (part_type === 'Task 1' ? { prompt: effectivePrompt, image: image_url, input: effectiveInput } : null),
             task2: aiResult.task2 || (part_type === 'Task 2' ? { prompt: effectivePrompt, input: effectiveInput } : null),
             task1_prompt: task1_prompt || (part_type === 'Task 1' ? effectivePrompt : null),
@@ -180,8 +235,9 @@ exports.getAssessmentById = async (req, res) => {
 exports.generateSampleEssay = async (req, res) => {
     try {
         const { id } = req.params;
-        const { part_type, task_prompt, user_input_text, image_url, target_band } = req.body;
+        const { skill, part_type, task_prompt, user_input_text, image_url, target_band } = req.body;
 
+        let effectiveSkill    = skill || 'writing';
         let effectivePartType = part_type;
         let effectivePrompt   = task_prompt;
         let effectiveInput    = user_input_text;
@@ -193,6 +249,7 @@ exports.generateSampleEssay = async (req, res) => {
             const dbResult = await db.query('SELECT * FROM assessments WHERE id = $1', [id]);
             if (dbResult.rows.length > 0) {
                 assessment = dbResult.rows[0];
+                effectiveSkill    = skill || assessment.skill || 'writing';
                 effectivePartType = part_type || assessment.part_type;
                 effectivePrompt   = task_prompt || assessment.task_prompt;
                 effectiveInput    = user_input_text || assessment.user_input_text;
@@ -201,20 +258,30 @@ exports.generateSampleEssay = async (req, res) => {
             }
         }
 
-        const sampleRewrite = await aiService.generateSampleEssay({
-            partType: effectivePartType || 'Task 2',
-            taskPrompt: effectivePrompt || '',
-            userInput: effectiveInput || '',
-            targetBand: Number(effectiveTarget) || 7.0,
-            imageUrl: effectiveImage || null,
-        });
+        let sampleRewrite = '';
+        if (effectiveSkill === 'speaking') {
+            sampleRewrite = await aiService.generateSpeakingSample({
+                partType: effectivePartType || 'Part 2 & 3',
+                taskPrompt: effectivePrompt || '',
+                targetBand: Number(effectiveTarget) || 8.5,
+            });
+        } else {
+            sampleRewrite = await aiService.generateSampleEssay({
+                partType: effectivePartType || 'Task 2',
+                taskPrompt: effectivePrompt || '',
+                userInput: effectiveInput || '',
+                targetBand: Number(effectiveTarget) || 7.0,
+                imageUrl: effectiveImage || null,
+            });
+        }
 
-        // Persist generated model essay into DB if assessment exists
+        // Persist generated model response into DB if assessment exists
         if (assessment) {
             const currentFeedback = assessment.feedback || {};
             const updatedFeedback = {
                 ...currentFeedback,
                 sample_rewrite: sampleRewrite,
+                sample_answer: sampleRewrite,
             };
             await db.query(
                 `UPDATE assessments SET feedback = $1 WHERE id = $2`,
@@ -222,10 +289,10 @@ exports.generateSampleEssay = async (req, res) => {
             );
         }
 
-        res.json({ sample_rewrite: sampleRewrite });
+        res.json({ sample_rewrite: sampleRewrite, sample_answer: sampleRewrite });
     } catch (err) {
         console.error('[Generate Sample Error]:', err.message);
-        res.status(500).json({ error: 'Failed to generate model essay' });
+        res.status(500).json({ error: 'Failed to generate model response' });
     }
 };
 

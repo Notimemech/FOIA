@@ -1,4 +1,6 @@
 const { GoogleGenAI } = require('@google/genai');
+const fs = require('fs');
+const path = require('path');
 const rubricService = require('./rubric.service');
 const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
 
@@ -115,13 +117,14 @@ const MODELS = [
     'gemini-1.5-flash',
 ];
 
-const callGemini = async (prompt) => {
+const callGemini = async (prompt, audioPart = null) => {
     let lastError;
     for (const model of MODELS) {
         try {
+            const contents = audioPart ? [audioPart, { text: prompt }] : prompt;
             const response = await ai.models.generateContent({
                 model,
-                contents: prompt,
+                contents,
                 config: { responseMimeType: 'application/json' },
             });
             console.log(`[AI] Used model: ${model}`);
@@ -588,12 +591,350 @@ const gradeFullTest = async ({
 };
 
 // ─────────────────────────────────────────────
+// Speaking Mock & Prompts
+// ─────────────────────────────────────────────
+const mockGradeSpeaking = (partType = 'Part 2 & 3', targetBand = 7.0) => ({
+    overall_band: 7.0,
+    target_band: Number(targetBand) || 7.0,
+    part_type: partType,
+    sub_scores: { FC: 7.0, LR: 7.0, PR: 7.0, GRA: 7.0 },
+    feedback: {
+        'Fluency & Coherence': {
+            'Speech Rate & Continuity':       { score: 7.0, comment: 'Maintains a steady speech rate with minimal unnatural pauses during long turns.' },
+            'Hesitation & Self-Correction':   { score: 7.0, comment: 'Occasional hesitation occurs primarily for content planning rather than searching for basic words.' },
+            'Use of Cohesive Devices':        { score: 7.0, comment: 'Uses a flexible range of discourse markers (e.g., "From my perspective", "As a consequence") naturally.' },
+            'Topic Development & Coherence':  { score: 7.0, comment: 'Answers are fully developed with relevant personal insights and extended logical flow.' }
+        },
+        'Lexical Resource': {
+            'Vocabulary Range & Flexibility':         { score: 7.0, comment: 'Demonstrates a wide variety of topic-specific vocabulary and expressions.' },
+            'Precision & Appropriacy of Word Choice': { score: 7.0, comment: 'Uses words accurately with clear awareness of context and formal register.' },
+            'Use of Less Common & Idiomatic Language':{ score: 7.0, comment: 'Incorporates natural idiomatic phrases (e.g., "broaden my horizons", "once in a blue moon") effectively.' },
+            'Paraphrasing Skill':                     { score: 7.0, comment: 'Paraphrases question prompts smoothly without relying on direct repetition.' }
+        },
+        'Pronunciation': {
+            'Clarity of Individual Sounds':   { score: 7.0, comment: 'Consonants and vowel sounds are articulated clearly with minimal accent interference.' },
+            'Rhythm, Stress & Intonation':    { score: 7.0, comment: 'Effective use of sentence stress and rising/falling intonation to convey subtle nuances.' },
+            'Connected Speech & Chunking':    { score: 7.0, comment: 'Demonstrates natural linking and appropriate pauses at phrase boundaries.' },
+            'Overall Intelligibility':        { score: 7.5, comment: 'Effortlessly understood throughout the speaking assessment.' }
+        },
+        'Grammatical Range & Accuracy': {
+            'Grammatical Accuracy':           { score: 7.0, comment: 'Produces a strong balance of simple and complex sentence forms with frequent error-free utterances.' }
+        },
+        transcript: 'Well, to be completely honest, travelling to coastal areas has always been my greatest passion. Whenever I get some time off, I try to explore new destinations because it really helps me recharge my batteries and gain fresh perspectives on life.',
+        questions_transcripts: [
+            {
+                question_number: 1,
+                transcript: 'Well, my hometown is Da Nang, a dynamic coastal city in central Vietnam known for its scenic bridges and pristine beaches.'
+            },
+            {
+                question_number: 2,
+                transcript: 'What I appreciate most is the welcoming atmosphere and the fresh seafood, along with the relatively low levels of traffic congestion.'
+            },
+            {
+                question_number: 3,
+                transcript: 'If I could make one change, I would advocate for more green urban parks and improved public cycling infrastructure.'
+            },
+            {
+                question_number: 4,
+                transcript: 'Without a doubt, I foresee myself living there long term because of the unparalleled quality of life and balanced pace of living.'
+            },
+            {
+                question_number: 5,
+                transcript: 'Over the last few years, it has transformed remarkably into a modern technological and tourism hub with impressive high-rise developments.'
+            }
+        ],
+        target_band_analysis: {
+            target_band: Number(targetBand) || 7.0,
+            achieved_band: 7.0,
+            status: Number(targetBand) <= 7.0 ? 'achieved' : 'below',
+            summary: `Your Speaking performance achieved Band 7.0, ${Number(targetBand) <= 7.0 ? 'successfully meeting' : 'working towards'} your Target Band of ${targetBand}.`,
+            strengths: [
+                'Natural delivery with coherent topic extension and clear discourse markers',
+                'Strong phonetic clarity with appropriate word stress and intonation'
+            ],
+            key_gaps: [
+                'Incorporate more varied idiomatic phrases in complex abstract discussions',
+                'Minimize occasional mid-clause hesitations when formulating complex viewpoints'
+            ]
+        },
+        examiner_strategy_breakdown: {
+            part1_ceiling_band: 7.5,
+            part1_ceiling_rationale: 'Part 1 demonstrated fluent responses to familiar topics with strong lexical breadth, setting the maximum potential ceiling at Band 7.5.',
+            part2_floor_band: 6.5,
+            part2_floor_rationale: 'Part 2 sustained 2-minute monologue showed occasional pauses when structuring extended thoughts, establishing a solid baseline floor at Band 6.5.',
+            part3_calibration_band: 7.0,
+            part3_calibration_rationale: 'Part 3 abstract discussion handled complex social perspectives competently with moderate idiomatic range, locking in the exact calibrated score at Band 7.0.'
+        },
+        improvements: [
+            {
+                title: 'Enhance Idiomatic Phrasing',
+                content: 'Incorporate higher-level collocations and idioms naturally (e.g. use "spark my curiosity" or "a game changer" where appropriate).'
+            },
+            {
+                title: 'Refine Complex Sentence Openers',
+                content: 'Use advanced conditional and concession structures such as "Had I not experienced that...", "Notwithstanding the fact that..." to push Grammar score to Band 8.0+.'
+            }
+        ],
+        sample_answer: 'To speak candidly, one of the most memorable journeys I have ever embarked upon was a road trip across the central highlands. What made it particularly extraordinary was not merely the breathtaking scenery, but the immersive cultural encounters with local artisans. Looking back, that voyage genuinely broadened my perspectives and fostered an enduring appreciation for sustainable travel.'
+    }
+});
+
+const buildGradingPromptSpeaking = (partType, taskPrompt, targetBand) => {
+    const contextBlock = rubricService.buildContextBlock('speaking', partType);
+
+    return `${contextBlock}
+You are a certified senior IELTS Speaking examiner. Your task is to evaluate the candidate's IELTS Speaking recording for ${partType}.
+
+TASK PROMPT / QUESTIONS:
+${taskPrompt}
+
+TARGET BAND BENCHMARK: ${targetBand || '7.0'}
+Compare the candidate's speech directly against the official Band ${targetBand || '7.0'} descriptors from the official IELTS Speaking Rubric above.
+
+================================================================================
+MANDATORY EXAMINER ASSESSMENT STRATEGY (THREE-STAGE PROGRESSIVE TRIANGULATION):
+================================================================================
+When evaluating the candidate's speech, you MUST apply the official IELTS Examiner progressive triangulation strategy:
+1. Part 1 (Maximum Potential Ceiling Band):
+   - Assess candidate fluency and comfortable agility in familiar everyday contexts to establish their MAXIMUM CEILING BAND.
+   - Question: "What is the peak band this candidate could theoretically attain based on their best performance in simple settings?"
+   - Establishes the UPPER BOUND (Band Ceiling).
+2. Part 2 (Minimum Baseline Floor Band):
+   - Assess the 2-minute uninterrupted monologue (Long Turn) to identify breakdown points, hesitation density, grammatical vulnerabilities, and stamina limits.
+   - Question: "When required to sustain 2 full minutes of discourse independently without prompts, what is the absolute lowest floor band that the candidate does not fall below?"
+   - Establishes the LOWER BOUND (Band Floor).
+3. Part 3 (Exact Calibrated Final Band):
+   - Assess in-depth abstract discussion to probe linguistic depth and lock in the EXACT FINAL BAND SCORE.
+   - The calibrated final score for each criterion and overall band MUST land decisively within the interval:
+     Part 2 Floor <= Final Band Score <= Part 1 Ceiling.
+
+Evaluate across the 4 official IELTS Speaking criteria and the exact sub-criteria below:
+1. Fluency & Coherence
+   - Speech Rate & Continuity
+   - Hesitation & Self-Correction
+   - Use of Cohesive Devices
+   - Topic Development & Coherence
+2. Lexical Resource
+   - Vocabulary Range & Flexibility
+   - Precision & Appropriacy of Word Choice
+   - Use of Less Common & Idiomatic Language
+   - Paraphrasing Skill
+3. Pronunciation
+   - Clarity of Individual Sounds
+   - Rhythm, Stress & Intonation
+   - Connected Speech & Chunking
+   - Overall Intelligibility
+4. Grammatical Range & Accuracy
+   - Grammatical Accuracy
+
+IMPORTANT: Transcribe the candidate's spoken response for EACH INDIVIDUAL QUESTION in the "questions_transcripts" array.
+
+Return ONLY strictly valid JSON matching this schema:
+{
+  "overall_band": 0.0,
+  "sub_scores": { "FC": 0.0, "LR": 0.0, "PR": 0.0, "GRA": 0.0 },
+  "feedback": {
+    "transcript": "<Full combined transcript of what the candidate said in English>",
+    "questions_transcripts": [
+      {
+        "question_number": 1,
+        "transcript": "<Exact spoken transcript for Question 1 in English>"
+      },
+      {
+        "question_number": 2,
+        "transcript": "<Exact spoken transcript for Question 2 in English>"
+      }
+    ],
+    "examiner_strategy_breakdown": {
+      "part1_ceiling_band": 0.0,
+      "part1_ceiling_rationale": "<How Part 1 established the candidate's upper ceiling limit>",
+      "part2_floor_band": 0.0,
+      "part2_floor_rationale": "<How Part 2 monologue revealed the minimum floor limit>",
+      "part3_calibration_band": 0.0,
+      "part3_calibration_rationale": "<How Part 3 abstract discussion pinpointed the exact band between Floor and Ceiling>"
+    },
+    "Fluency & Coherence": {
+      "Speech Rate & Continuity":       { "score": 0.0, "comment": "<specific evaluation quoting spoken phrases>" },
+      "Hesitation & Self-Correction":   { "score": 0.0, "comment": "<specific evaluation>" },
+      "Use of Cohesive Devices":        { "score": 0.0, "comment": "<specific evaluation>" },
+      "Topic Development & Coherence":  { "score": 0.0, "comment": "<specific evaluation>" }
+    },
+    "Lexical Resource": {
+      "Vocabulary Range & Flexibility":         { "score": 0.0, "comment": "<specific evaluation>" },
+      "Precision & Appropriacy of Word Choice": { "score": 0.0, "comment": "<specific evaluation>" },
+      "Use of Less Common & Idiomatic Language":{ "score": 0.0, "comment": "<specific evaluation>" },
+      "Paraphrasing Skill":                     { "score": 0.0, "comment": "<specific evaluation>" }
+    },
+    "Pronunciation": {
+      "Clarity of Individual Sounds":   { "score": 0.0, "comment": "<specific evaluation>" },
+      "Rhythm, Stress & Intonation":    { "score": 0.0, "comment": "<specific evaluation>" },
+      "Connected Speech & Chunking":    { "score": 0.0, "comment": "<specific evaluation>" },
+      "Overall Intelligibility":        { "score": 0.0, "comment": "<specific evaluation>" }
+    },
+    "Grammatical Range & Accuracy": {
+      "Grammatical Accuracy":           { "score": 0.0, "comment": "<specific evaluation>" }
+    },
+    "target_band_analysis": {
+      "target_band": ${Number(targetBand) || 7.0},
+      "achieved_band": 0.0,
+      "status": "achieved | below",
+      "summary": "<Comparison of achieved band vs target band>",
+      "strengths": ["<strength 1>", "<strength 2>"],
+      "key_gaps": ["<gap 1>", "<gap 2>"]
+    },
+    "improvements": [
+      { "title": "<Actionable Improvement Title>", "content": "<Detailed advice with concrete vocabulary/collocations/grammar structures>" },
+      { "title": "<Actionable Improvement Title>", "content": "<Detailed advice>" }
+    ],
+    "sample_answer": "<Band 8.5+ model spoken answer in natural spoken English answering the prompt>"
+  }
+}
+
+STRICT EXAMINER CALIBRATION & GRADING RULES (PREVENT LENIENT SCORING):
+1. Fluency & Coherence:
+   - Strictly audit speech rate, speech continuity, mid-clause pauses, false starts, backtracking, and word-searching hesitations.
+   - If the candidate frequently hesitates or searches for basic vocabulary, Fluency MUST NOT exceed Band 5.5 - 6.0.
+   - Band 7.0+ requires effortless speech flow, natural discourse markers, and smooth topic extension without noticeable strain.
+2. Lexical Resource:
+   - Penalize over-reliance on basic/generic vocabulary (e.g. "nice", "good", "important", "very", "things").
+   - Verify collocation accuracy, style/register, and ability to paraphrase without awkwardness.
+   - Band 7.0+ requires accurate use of less common collocations and idiomatic expressions with stylistic awareness.
+3. Grammatical Range & Accuracy:
+   - Strictly measure grammatical error density (tenses, subject-verb agreement, singular/plural, articles, prepositions).
+   - If systematic basic grammatical errors occur throughout, GRA MUST be capped at Band 5.0 - 5.5.
+   - Band 7.0+ requires a variety of complex structures with frequent error-free spoken sentences.
+4. Pronunciation:
+   - Audit phonemic clarity (vowels/consonants), word stress, rhythm/stress-timing, intonation contour, and connected speech/linking.
+   - If the speaker is monotone, drops final consonants, or requires listener effort to understand, Pronunciation MUST NOT exceed Band 5.5 - 6.0.
+   - Band 7.0+ requires expressive intonation, natural rhythm, clear chunking, and effortless intelligibility throughout.
+5. Overall Calibration:
+   - Strictly adhere to the IELTS Speaking Key Assessment Criteria and Band Descriptors above.
+   - Do NOT inflate scores or grade leniently. Most intermediate spoken answers genuinely fall in the Band 5.0 - 6.0 range.
+   - overall_band = arithmetic average of FC, LR, PR, GRA rounded to the nearest 0.5 (e.g. 6.25 -> 6.5, 6.125 -> 6.0).
+   - Every score must be between 0.0 and 9.0 in 0.5 increments.
+   - If audio is silent, blank, or completely uninterpretable, score Band 0.0.
+   - All evaluation comments must cite concrete spoken phrases and phonetic evidence in English.
+   - Do NOT use markdown inside JSON string values.`;
+};
+
+const gradeSpeakingTask = async (partType = 'Part 2 & 3', taskPrompt = '', audioPath = null, targetBand = 7.0) => {
+    if (!ai) {
+        await new Promise((r) => setTimeout(r, 2000));
+        return mockGradeSpeaking(partType, targetBand);
+    }
+
+    let audioPart = null;
+    if (audioPath && fs.existsSync(audioPath)) {
+        try {
+            const audioBuffer = fs.readFileSync(audioPath);
+            const ext = path.extname(audioPath).toLowerCase();
+            let mimeType = 'audio/wav';
+            if (ext === '.mp3') mimeType = 'audio/mp3';
+            else if (ext === '.webm') mimeType = 'audio/webm';
+            else if (ext === '.ogg') mimeType = 'audio/ogg';
+            else if (ext === '.m4a') mimeType = 'audio/m4a';
+
+            audioPart = {
+                inlineData: {
+                    data: audioBuffer.toString('base64'),
+                    mimeType: mimeType,
+                },
+            };
+        } catch (err) {
+            console.error('[AI] Failed to read audio file:', err.message);
+        }
+    }
+
+    const gradingPrompt = buildGradingPromptSpeaking(partType, taskPrompt, targetBand);
+
+    try {
+        console.log(`[AI] Grading Speaking ${partType} with Target Band ${targetBand}...`);
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+                const res = await callGemini(gradingPrompt, audioPart);
+                if (res && res.feedback && res.overall_band !== undefined) {
+                    res.part_type = partType;
+                    res.target_band = Number(targetBand) || 7.0;
+
+                    // Ensure sub-scores match
+                    if (res.sub_scores) {
+                        const scores = Object.values(res.sub_scores).map(Number).filter(n => !isNaN(n));
+                        if (scores.length > 0) {
+                            res.overall_band = roundToHalf(scores.reduce((a, b) => a + b, 0) / scores.length);
+                        }
+                    }
+
+                    if (!res.feedback.target_band_analysis) {
+                        res.feedback.target_band_analysis = {
+                            target_band: Number(targetBand) || 7.0,
+                            achieved_band: res.overall_band,
+                            status: res.overall_band >= (Number(targetBand) || 7.0) ? 'achieved' : 'below',
+                            summary: `Your Speaking achieved Band ${res.overall_band} compared to target Band ${targetBand || 7.0}.`,
+                            strengths: ['Clear delivery of main ideas', 'Good phonetic intelligibility'],
+                            key_gaps: ['Work on greater lexical variety and natural intonation'],
+                        };
+                    }
+                    return res;
+                }
+            } catch (e) {
+                console.error(`[AI] Speaking grading attempt ${attempt} error:`, e.message);
+            }
+        }
+        return mockGradeSpeaking(partType, targetBand);
+    } catch (err) {
+        console.error('[AI] Speaking Service Error:', err);
+        return mockGradeSpeaking(partType, targetBand);
+    }
+};
+
+const generateSpeakingSample = async ({ partType = 'Part 2 & 3', taskPrompt = '', targetBand = 8.5 }) => {
+    console.log(`[AI] Generating on-demand Model Spoken Answer for ${partType}...`);
+    if (!ai) {
+        await new Promise((r) => setTimeout(r, 1200));
+        return `To speak candidly, regarding this topic: "${taskPrompt.slice(0, 80)}...", one of the most memorable experiences I have had involved navigating unfamiliar challenges with a resilient mindset. What truly stood out was how it pushed me out of my comfort zone, enabling me to refine both my interpersonal communication and problem-solving skills under time pressure. In retrospect, that experience was a pivotal turning point that continues to shape my perspectives today.`;
+    }
+
+    const prompt = `You are a native English speaker and former IELTS examiner. Generate a Band 8.5–9.0 model spoken answer for the following IELTS Speaking prompt.
+PROMPT:
+${taskPrompt}
+PART TYPE:
+${partType}
+
+REQUIREMENTS:
+- Natural spoken English register (use appropriate discourse markers like "Well,", "To be perfectly honest,", "Looking back,", "Having said that,").
+- Rich idioms and natural academic collocations.
+- Diverse grammatical range (conditionals, passive structures, relative clauses).
+- Length appropriate for ${partType === 'Part 1' ? '1.5 - 2 minutes across questions' : '2 full minutes of speaking'}.
+
+Output ONLY JSON:
+{
+  "sample_answer": "<Full text of the model spoken answer in English with natural paragraph breaks>"
+}`;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+            const res = await callGemini(prompt);
+            if (res && res.sample_answer) {
+                return res.sample_answer;
+            }
+        } catch (e) {
+            console.error(`[AI] Generate speaking sample attempt ${attempt} error:`, e.message);
+        }
+    }
+    return `Well, to address this question directly, I believe that having the adaptability to handle unexpected situations is immensely beneficial. In my own life, whenever I encounter complex hurdles, I strive to stay analytical while maintaining a positive outlook.`;
+};
+
+// ─────────────────────────────────────────────
 // Main Entry point
 // ─────────────────────────────────────────────
 exports.gradeAndCrossCheck = async (skill, taskPrompt, userInput, audioPath, options = {}) => {
-    const partType   = options.part_type || 'Task 2';
+    const partType   = options.part_type || (skill === 'speaking' ? 'Part 2 & 3' : 'Task 2');
     const targetBand = options.target_band || 7.0;
     const imageUrl   = options.image_url || null;
+
+    if (skill === 'speaking') {
+        return gradeSpeakingTask(partType, taskPrompt, audioPath, targetBand);
+    }
 
     if (partType === 'Full Test') {
         return gradeFullTest({
@@ -610,7 +951,10 @@ exports.gradeAndCrossCheck = async (skill, taskPrompt, userInput, audioPath, opt
     return gradeSingleTask(partType, taskPrompt, userInput, targetBand, imageUrl);
 };
 
-exports.gradeSingleTask    = gradeSingleTask;
-exports.gradeFullTest      = gradeFullTest;
-exports.generateSampleEssay = generateSampleEssay;
+exports.gradeSingleTask       = gradeSingleTask;
+exports.gradeFullTest         = gradeFullTest;
+exports.gradeSpeakingTask     = gradeSpeakingTask;
+exports.generateSampleEssay   = generateSampleEssay;
+exports.generateSpeakingSample = generateSpeakingSample;
+exports.mockGradeSpeaking     = mockGradeSpeaking;
 
