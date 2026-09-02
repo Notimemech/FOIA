@@ -1,0 +1,451 @@
+{
+  "title": "IELTS Speaking Topic Bank",
+  "source_focus": [
+    "Cambridge IELTS 19",
+    "Cambridge IELTS 20"
+  ],
+  "parts": {
+    "part_1": {
+      "description": "Personal topics, habits, preferences and familiar experiences",
+      "topic_count": 15,
+      "topics": [
+        {
+          "topic": "Walking & Exercise",
+          "questions": [
+            "How much walking do you usually do in a day?",
+            "Do you prefer walking or taking public transport?",
+            "Did you walk more when you were younger?",
+            "Where do you usually go for a walk?",
+            "Would you like to exercise more in the future?"
+          ]
+        },
+        {
+          "topic": "Food & International Food",
+          "questions": [
+            "What kind of food do you usually eat?",
+            "Do you often eat food from other countries?",
+            "Is there any foreign food that you don't like?",
+            "Have you ever tried cooking an international dish?",
+            "What Vietnamese food would you recommend to a foreign visitor?"
+          ]
+        },
+        {
+          "topic": "Fruit",
+          "questions": [
+            "What is your favourite fruit?",
+            "How often do you eat fruit?",
+            "Is there any fruit you dislike?",
+            "Do you prefer fresh fruit or fruit juice?",
+            "Is fruit expensive where you live?"
+          ]
+        },
+        {
+          "topic": "Cafés",
+          "questions": [
+            "Do you often go to cafés?",
+            "What do you usually do when you are in a café?",
+            "What makes a café attractive to you?",
+            "Do you prefer quiet or busy cafés?",
+            "Have cafés become more popular among young people?"
+          ]
+        },
+        {
+          "topic": "Holidays",
+          "questions": [
+            "Do you usually spend holidays with your family or friends?",
+            "What kind of holiday do you enjoy most?",
+            "What type of accommodation do you prefer?",
+            "Do you usually plan your holidays carefully?",
+            "Where would you like to go on your next holiday?"
+          ]
+        },
+        {
+          "topic": "Museums",
+          "questions": [
+            "Did you enjoy visiting museums when you were a child?",
+            "How often do you visit museums nowadays?",
+            "Is there an interesting museum near where you live?",
+            "Do you prefer visiting museums alone or with other people?",
+            "Would you visit a museum when travelling abroad?"
+          ]
+        },
+        {
+          "topic": "Personal Qualities",
+          "questions": [
+            "What do you think is your best personal quality?",
+            "What quality do you value most in a friend?",
+            "Are you similar to your parents in terms of personality?",
+            "Is there a personal quality you would like to develop?",
+            "Do you think you would make a good leader?"
+          ]
+        },
+        {
+          "topic": "Films & TV",
+          "questions": [
+            "How often do you watch films?",
+            "What kind of films do you enjoy?",
+            "Do you prefer watching films at home or at the cinema?",
+            "Is there a film you would like to watch again?",
+            "Do you usually watch films alone or with friends?"
+          ]
+        },
+        {
+          "topic": "Music",
+          "questions": [
+            "What kind of music do you usually listen to?",
+            "When do you normally listen to music?",
+            "Has your taste in music changed over time?",
+            "Do you prefer listening to music alone or with other people?",
+            "Is live music popular among young people in your country?"
+          ]
+        },
+        {
+          "topic": "Transport & Travelling by Plane",
+          "questions": [
+            "How often do you travel by public transport?",
+            "Do you enjoy travelling by plane?",
+            "What is your favourite way of travelling?",
+            "Would you like to live near an airport?",
+            "Do you think you will travel more in the future?"
+          ]
+        },
+        {
+          "topic": "Weekends",
+          "questions": [
+            "What do you usually do at weekends?",
+            "Do you prefer relaxing or being active at weekends?",
+            "Did you spend your weekends differently when you were younger?",
+            "Do you usually make plans for the weekend?",
+            "Would you like to have longer weekends?"
+          ]
+        },
+        {
+          "topic": "Study & Work",
+          "questions": [
+            "What do you enjoy most about your studies?",
+            "What part of your studies do you find difficult?",
+            "Do you prefer studying alone or with other people?",
+            "What kind of job would you like to have in the future?",
+            "Do you think your studies will help you get that job?"
+          ]
+        },
+        {
+          "topic": "Technology",
+          "questions": [
+            "What piece of technology do you use most?",
+            "How often do you use your phone?",
+            "Is there any technology you find difficult to use?",
+            "Did you use technology differently when you were younger?",
+            "Is there a new technology you would like to try?"
+          ]
+        },
+        {
+          "topic": "News",
+          "questions": [
+            "How often do you read or watch the news?",
+            "Where do you usually get your news?",
+            "Do you prefer local or international news?",
+            "Is there a type of news you are particularly interested in?",
+            "Do you discuss the news with your friends?"
+          ]
+        },
+        {
+          "topic": "Plans & Future",
+          "questions": [
+            "Do you usually make plans for your free time?",
+            "Are you good at following your plans?",
+            "How often do your plans change?",
+            "Do you prefer making plans alone or with other people?",
+            "What is one plan you have for the near future?"
+          ]
+        }
+      ]
+    },
+    "part_2": {
+      "description": "Cue-card topics requiring a 1–2 minute individual long turn",
+      "topic_count": 15,
+      "topics": [
+        {
+          "topic": "A Film You Would Like to Watch Again",
+          "cue_card": "Describe a film you have seen that you would like to watch again.",
+          "questions": [
+            "What the film was and when you watched it",
+            "Who you would like to watch it with",
+            "Why you would like to watch it again"
+          ]
+        },
+        {
+          "topic": "A Time You Changed a Plan",
+          "cue_card": "Describe a time when you changed a plan you had made.",
+          "questions": [
+            "What your original plan was",
+            "Why you changed it",
+            "How you felt about the new plan"
+          ]
+        },
+        {
+          "topic": "A Piece of Work You Were Proud Of",
+          "cue_card": "Describe a piece of work you did that you felt very satisfied with.",
+          "questions": [
+            "What the work was",
+            "Who or what helped you",
+            "Why you were satisfied with it"
+          ]
+        },
+        {
+          "topic": "A News Story You Discussed",
+          "cue_card": "Describe a news story that you had a long discussion about.",
+          "questions": [
+            "What the news was about",
+            "Who you discussed it with",
+            "Why the discussion lasted a long time"
+          ]
+        },
+        {
+          "topic": "A Law You Agree With",
+          "cue_card": "Describe a law in your country that you think is a good idea.",
+          "questions": [
+            "What the law is",
+            "Why and when it was introduced",
+            "Why you agree with it"
+          ]
+        },
+        {
+          "topic": "A Person Who Won an Award",
+          "cue_card": "Describe a person from your country who has won an important award.",
+          "questions": [
+            "Who the person is",
+            "What award they received",
+            "Why they deserved the award"
+          ]
+        },
+        {
+          "topic": "A Long Journey",
+          "cue_card": "Describe a journey that took longer than you expected.",
+          "questions": [
+            "Where you were going",
+            "Who you were travelling with",
+            "Why the journey took so long"
+          ]
+        },
+        {
+          "topic": "A Useful Piece of Technology",
+          "cue_card": "Describe a piece of technology that you find useful.",
+          "questions": [
+            "What it is",
+            "How you use it",
+            "Why it is useful to you"
+          ]
+        },
+        {
+          "topic": "A Place You Enjoy Visiting",
+          "cue_card": "Describe a place you enjoy visiting in your free time.",
+          "questions": [
+            "Where it is",
+            "What you do there",
+            "Why you enjoy going there"
+          ]
+        },
+        {
+          "topic": "A Person with Good Qualities",
+          "cue_card": "Describe someone you know who has a good personal quality.",
+          "questions": [
+            "Who the person is",
+            "What quality they have",
+            "How this quality has helped them"
+          ]
+        },
+        {
+          "topic": "A Film or Play You Recommend",
+          "cue_card": "Describe a film or play that you would recommend to a friend.",
+          "questions": [
+            "What it is about",
+            "Who you would recommend it to",
+            "Why you would recommend it"
+          ]
+        },
+        {
+          "topic": "A Time You Achieved Something",
+          "cue_card": "Describe something you achieved that made you feel proud.",
+          "questions": [
+            "What you achieved",
+            "How you achieved it",
+            "Why it was important to you"
+          ]
+        },
+        {
+          "topic": "A Place You Visited on Holiday",
+          "cue_card": "Describe a place you visited during a holiday.",
+          "questions": [
+            "Where it was",
+            "What you did there",
+            "Why you remember the place"
+          ]
+        },
+        {
+          "topic": "A Conversation You Remember",
+          "cue_card": "Describe an interesting conversation you had with someone.",
+          "questions": [
+            "Who you talked to",
+            "What you talked about",
+            "Why you remember the conversation"
+          ]
+        },
+        {
+          "topic": "Something You Would Like to Learn",
+          "cue_card": "Describe something new that you would like to learn.",
+          "questions": [
+            "What it is",
+            "Why you want to learn it",
+            "How you would learn it"
+          ]
+        }
+      ]
+    },
+    "part_3": {
+      "description": "Abstract discussion topics involving opinions, causes, comparisons, evaluation and predictions",
+      "topic_count": 15,
+      "topics": [
+        {
+          "topic": "Theatre & Entertainment",
+          "questions": [
+            "What kinds of entertainment are most popular among people in your country?",
+            "Why do some people prefer watching performances online rather than going to theatres?",
+            "What can theatres do to attract younger audiences?"
+          ]
+        },
+        {
+          "topic": "Education & Rules",
+          "questions": [
+            "What kinds of rules are necessary in schools?",
+            "Why do some students dislike following rules?",
+            "How should schools deal with students who repeatedly break rules?"
+          ]
+        },
+        {
+          "topic": "Law & Society",
+          "questions": [
+            "Why do people choose to study law?",
+            "What qualities are important for someone working in the legal profession?",
+            "Do you think people are more aware of laws than they were in the past?"
+          ]
+        },
+        {
+          "topic": "Careers",
+          "questions": [
+            "What factors should young people consider when choosing a career?",
+            "How useful is work experience before choosing a career?",
+            "Do you think people will change careers more frequently in the future?"
+          ]
+        },
+        {
+          "topic": "Job Satisfaction",
+          "questions": [
+            "What makes people satisfied with their jobs?",
+            "Which is more important, a high salary or good colleagues?",
+            "Is it possible for people to enjoy every type of job?"
+          ]
+        },
+        {
+          "topic": "Ambition & Success",
+          "questions": [
+            "Why are some people more ambitious than others?",
+            "Is ambition always beneficial?",
+            "How do people's ideas of success change as they get older?"
+          ]
+        },
+        {
+          "topic": "News & Media",
+          "questions": [
+            "How do people usually get news nowadays?",
+            "Why do some people prefer local news to international news?",
+            "How can people distinguish reliable news from false information?"
+          ]
+        },
+        {
+          "topic": "Public Discussions",
+          "questions": [
+            "Why are discussion programmes popular?",
+            "What kinds of people are likely to participate in public discussions?",
+            "Can public discussions influence people's opinions positively?"
+          ]
+        },
+        {
+          "topic": "Technology & Society",
+          "questions": [
+            "How has technology changed people's daily lives?",
+            "Do you think people rely too heavily on technology?",
+            "What technological developments might change society in the future?"
+          ]
+        },
+        {
+          "topic": "Films & Culture",
+          "questions": [
+            "Why do people enjoy watching films?",
+            "Do films have an important role in preserving culture?",
+            "Will cinemas and theatres remain popular in the future?"
+          ]
+        },
+        {
+          "topic": "Transport & Cars",
+          "questions": [
+            "Why do many young people want to learn to drive?",
+            "What are the main differences between driving in cities and rural areas?",
+            "How can governments encourage people to use public transport?"
+          ]
+        },
+        {
+          "topic": "Electric Vehicles",
+          "questions": [
+            "Why are electric cars becoming more popular?",
+            "What prevents some people from buying electric cars?",
+            "What could governments do to encourage people to use electric vehicles?"
+          ]
+        },
+        {
+          "topic": "Awards & Competition",
+          "questions": [
+            "Why do people like receiving awards?",
+            "Should children receive rewards for good performance at school?",
+            "Is competition more beneficial or harmful for young people?"
+          ]
+        },
+        {
+          "topic": "Travel & Tourism",
+          "questions": [
+            "Why do people enjoy travelling to other countries?",
+            "What are the benefits of tourism for local communities?",
+            "How can countries prevent tourism from damaging local culture and the environment?"
+          ]
+        },
+        {
+          "topic": "Plans & Change",
+          "questions": [
+            "Why do people sometimes fail to follow their plans?",
+            "Is it better to make detailed plans or remain flexible?",
+            "Do you think people today need to adapt to change more than previous generations?"
+          ]
+        }
+      ]
+    }
+  },
+  "summary": {
+    "part_1": {
+      "topics": 15,
+      "questions_per_topic": 5,
+      "total_questions": 75
+    },
+    "part_2": {
+      "topics": 15,
+      "questions_per_topic": 3,
+      "total_questions": 45
+    },
+    "part_3": {
+      "topics": 15,
+      "questions_per_topic": 3,
+      "total_questions": 45
+    },
+    "total_topics": 45,
+    "total_questions": 165
+  }
+}

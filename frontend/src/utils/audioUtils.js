@@ -106,3 +106,36 @@ export async function mergeAudioBlobs(blobs) {
     }
   }
 }
+
+/**
+ * Downloads an audio file from a Blob URL or server URL.
+ * @param {string} audioUrl - URL (blob: or http:) of the audio file.
+ * @param {string} [filename='candidate_audio.wav'] - Default name for the saved file.
+ */
+export async function downloadAudio(audioUrl, filename = 'candidate_audio.wav') {
+  if (!audioUrl) return;
+  try {
+    const response = await fetch(audioUrl);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.style.display = 'none';
+    anchor.href = blobUrl;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    window.URL.revokeObjectURL(blobUrl);
+    document.body.removeChild(anchor);
+  } catch (err) {
+    console.warn('[audioUtils] downloadAudio fetch failed, falling back to direct anchor:', err);
+    const anchor = document.createElement('a');
+    anchor.style.display = 'none';
+    anchor.href = audioUrl;
+    anchor.download = filename;
+    anchor.target = '_blank';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  }
+}
+

@@ -8,6 +8,7 @@ import SpeakingHub from './pages/SpeakingHub';
 import SpeakingTest from './pages/SpeakingTest';
 import SpeakingResult from './pages/SpeakingResult';
 import SpeakingDetailAnalysis from './pages/SpeakingDetailAnalysis';
+import SpeakingRoulette from './pages/SpeakingRoulette';
 import History from './pages/History';
 import HistoryDetail from './pages/HistoryDetail';
 import './index.css';
@@ -36,6 +37,7 @@ function App() {
             <Route path="/writing/result/:id" element={<WritingResult />} />
             <Route path="/speaking" element={<SpeakingHub />} />
             <Route path="/speaking/test" element={<SpeakingTest />} />
+            <Route path="/speaking/roulette" element={<SpeakingRoulette />} />
             <Route path="/speaking/result/:id" element={<SpeakingResult />} />
             <Route path="/speaking/detail/:id" element={<SpeakingDetailAnalysis />} />
             <Route path="/history" element={<History />} />

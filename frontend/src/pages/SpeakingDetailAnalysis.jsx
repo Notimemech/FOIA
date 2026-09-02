@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { formatFeedbackText } from '../utils/feedbackFormatter';
 import '../style/speakingResult.css';
 
 function SpeakingDetailAnalysis() {
@@ -169,7 +170,7 @@ function SpeakingDetailAnalysis() {
                 <div className="sd-imp-badge">{idx + 1}</div>
                 <div className="sd-imp-text">
                   <h4>{imp.title}</h4>
-                  <p>{imp.content}</p>
+                  <p>{formatFeedbackText(imp.content)}</p>
                 </div>
               </div>
             ))}

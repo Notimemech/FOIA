@@ -23,6 +23,51 @@ function SpeakingHub() {
         <p className="sh-subtitle">
           Practice IELTS Speaking with our real-time voice recorder, countdown timers, and official Cambridge Band Descriptors scoring across Fluency & Coherence, Lexical Resource, Pronunciation, and Grammatical Range & Accuracy.
         </p>
+
+        <div style={{
+          marginTop: '1.25rem',
+          background: 'linear-gradient(135deg, #485c42 0%, #2f3d2b 100%)',
+          border: '1px solid rgba(254, 240, 138, 0.35)',
+          borderRadius: '16px',
+          padding: '1.25rem 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+              <span style={{ fontSize: '1.3rem' }}>🎰</span>
+              <strong style={{ fontSize: '1.15rem', color: '#fef08a', fontFamily: 'var(--font-heading)' }}>
+                Speaking Roulette (Quay chủ đề ngẫu nhiên)
+              </strong>
+              <span style={{ background: '#f59e0b', color: '#000', fontSize: '0.72rem', fontWeight: 900, padding: '0.15rem 0.45rem', borderRadius: '4px' }}>NEW</span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,255,255,0.85)' }}>
+              Xòe quạt bài, chọn chủ đề ngẫu nhiên theo Part 1, 2, 3 từ bộ đề Cambridge 19 & 20, xem từ vựng ngữ cảnh và ghi âm ngay lập tức!
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/speaking/roulette')}
+            style={{
+              background: '#fdfbf7',
+              color: '#1e293b',
+              border: 'none',
+              padding: '0.75rem 1.4rem',
+              borderRadius: '24px',
+              fontWeight: 800,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            🎲 Khám phá Roulette →
+          </button>
+        </div>
       </header>
 
       {/* ── 3 Main Sections ── */}

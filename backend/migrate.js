@@ -10,6 +10,7 @@ async function migrate() {
         await db.query(`
             DROP TABLE IF EXISTS assessments CASCADE;
             DROP TABLE IF EXISTS questions CASCADE;
+            DROP TABLE IF EXISTS speaking_roulette_topics CASCADE;
             DROP TABLE IF EXISTS ai_context_caches CASCADE;
             DROP TABLE IF EXISTS ai_model_configs CASCADE;
         `);
