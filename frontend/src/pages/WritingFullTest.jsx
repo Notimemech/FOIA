@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import { submitAssessment, uploadImage } from '../services/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import LoadingSteps from '../components/LoadingSteps';
 import WritingFullTestSetupForm from '../components/WritingFullTestSetupForm';
@@ -74,7 +74,7 @@ function WritingFullTest() {
     formData.append('image', file);
     setImageUploading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/assessments/upload-image', formData, {
+      const res = await uploadImage(formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setTask1Image(res.data.imageUrl);
@@ -105,7 +105,7 @@ function WritingFullTest() {
     if (timerRef.current) clearInterval(timerRef.current);
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/assessments/submit', {
+      const res = await submitAssessment({
         skill: 'writing',
         part_type: 'Full Test',
         task1_prompt: task1Prompt,

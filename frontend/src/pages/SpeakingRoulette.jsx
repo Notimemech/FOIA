@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { getAssessments, submitAssessment } from '../services/api';
 import RouletteCardDeck from '../components/RouletteCardDeck';
 import RouletteQuestionCard from '../components/RouletteQuestionCard';
 import SpeakingQuestionModal from '../components/SpeakingQuestionModal';
@@ -47,7 +47,7 @@ function SpeakingRoulette() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/assessments?skill=speaking');
+        const res = await getAssessments({ skill: 'speaking' });
         setHistoryList(res.data || []);
       } catch (err) {
         console.warn('Could not fetch assessment history', err);
@@ -134,8 +134,8 @@ function SpeakingRoulette() {
       formData.append('audio', blob, `${recordName}.wav`);
       formData.append('audio_p1_0', blob, `${recordName}.wav`);
 
-      const res = await axios.post('http://localhost:5000/api/assessments/submit', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await submitAssessment(formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       setTimeout(() => {

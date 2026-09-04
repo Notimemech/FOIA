@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { getAssessmentById, generateSample } from '../services/api';
 import { getScoreColor } from '../utils/scoreColor';
 import { formatFeedbackText } from '../utils/feedbackFormatter';
 import WritingResultPanels from '../components/WritingResultPanels';
@@ -46,7 +46,7 @@ function WritingResult() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/assessments/${id}`);
+        const res = await getAssessmentById(id);
         setResult(res.data);
         const feedback = res.data.feedback || {};
         const availableCats = Object.keys(CATEGORY_META).filter(cat => feedback[cat]);
@@ -133,7 +133,7 @@ function WritingResult() {
   const handleGenerateSample = async () => {
     setSampleLoading(true);
     try {
-      const res = await axios.post(`http://localhost:5000/api/assessments/${id}/generate-sample`, {
+      const res = await generateSample(id, {
         part_type: currentTaskData.part_type,
         task_prompt: currentTaskData.task_prompt,
         user_input_text: currentTaskData.user_input_text,

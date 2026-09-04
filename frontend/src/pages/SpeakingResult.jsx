@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { getAssessmentById, generateSample } from '../services/api';
 import { getScoreColor } from '../utils/scoreColor';
 import { downloadAudio } from '../utils/audioUtils';
 import { SPEAKING_CATEGORY_META } from '../utils/speakingMeta';
@@ -25,7 +25,7 @@ function SpeakingResult() {
   useEffect(() => {
     const fetchAssessment = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/assessments/${id}`);
+        const res = await getAssessmentById(id);
         setResult(res.data);
         const feedback = res.data.feedback || {};
         if (feedback.sample_answer || feedback.sample_rewrite) {
@@ -56,8 +56,11 @@ function SpeakingResult() {
   const handleGenerateSample = async () => {
     setSampleLoading(true);
     try {
-      const res = await axios.post(`http://localhost:5000/api/assessments/${id}/generate-sample`, {
-        skill: 'speaking', part_type: result.part_type, task_prompt: result.task_prompt, target_band: 8.5,
+      const res = await generateSample(id, {
+        skill: 'speaking',
+        part_type: result.part_type,
+        task_prompt: result.task_prompt,
+        target_band: 8.5,
       });
       if (res.data?.sample_answer || res.data?.sample_rewrite) {
         setSampleScript(res.data.sample_answer || res.data.sample_rewrite);

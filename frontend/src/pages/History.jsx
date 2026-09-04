@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { getAssessments } from '../services/api';
 import HistoryTableRow from '../components/HistoryTableRow';
 import '../style/history.css';
 
@@ -19,7 +19,7 @@ function History() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/assessments');
+        const res = await getAssessments();
         setAssessments(res.data || []);
       } catch (err) {
         console.error(err);

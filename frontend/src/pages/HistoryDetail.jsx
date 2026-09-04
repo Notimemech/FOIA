@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { getAssessmentById, generateSample } from '../services/api';
 import { getScoreColor } from '../utils/scoreColor';
 
 function HistoryDetail() {
@@ -23,7 +23,7 @@ function HistoryDetail() {
   useEffect(() => {
     const fetchAssessment = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/assessments/${id}`);
+        const res = await getAssessmentById(id);
         setResult(res.data);
         
         // Auto select first available category
@@ -49,7 +49,7 @@ function HistoryDetail() {
     if (!result) return;
     setSampleLoading(true);
     try {
-      const res = await axios.post(`http://localhost:5000/api/assessments/${id}/generate-sample`, {
+      const res = await generateSample(id, {
         part_type: result.part_type,
         task_prompt: result.task_prompt,
         user_input_text: result.user_input_text,

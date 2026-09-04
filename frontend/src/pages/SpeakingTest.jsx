@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { submitAssessment } from '../services/api';
 import LoadingSteps from '../components/LoadingSteps';
 import SpeakingQuestionModal from '../components/SpeakingQuestionModal';
 import SpeakingTestSetupForm from '../components/SpeakingTestSetupForm';
@@ -216,7 +216,7 @@ function SpeakingTest() {
         }
       });
 
-      const res = await axios.post('http://localhost:5000/api/assessments/submit', formData, {
+      const res = await submitAssessment(formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       navigate(`/speaking/result/${res.data.id}`);
