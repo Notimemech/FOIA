@@ -104,12 +104,57 @@ exports.submitAssessment = async (req, res) => {
                         title: q.title || `Question ${idx + 1}`,
                         part: q.part || part_type,
                         question: q.question || q.text || '',
+                        record_name: q.record_name || null,
                         audio_url: filesMap[fieldKey] || filesMap[q.id] || filesMap['audio'] || null,
                         transcript: q.transcript || '',
                     };
                 });
             } catch (e) {
                 console.warn('[Questions JSON parse warning]:', e.message);
+            }
+        }
+
+        // Insert new questions into database questions table
+        let linkedQuestionId = question_id || null;
+        if (questionsData.length > 0) {
+            try {
+                for (const qItem of questionsData) {
+                    if (qItem.question && qItem.question.trim().length > 0) {
+                        const existingQ = await db.query(
+                            'SELECT id FROM questions WHERE skill = $1 AND content = $2 LIMIT 1',
+                            [skill, qItem.question.trim()]
+                        );
+                        if (existingQ.rows.length === 0) {
+                            const newQ = await db.query(
+                                'INSERT INTO questions (skill, part, content) VALUES ($1, $2, $3) RETURNING id',
+                                [skill, qItem.part || part_type, qItem.question.trim()]
+                            );
+                            if (!linkedQuestionId) linkedQuestionId = newQ.rows[0].id;
+                        } else if (!linkedQuestionId) {
+                            linkedQuestionId = existingQ.rows[0].id;
+                        }
+                    }
+                }
+            } catch (qErr) {
+                console.warn('[Questions DB Insert Warning]:', qErr.message);
+            }
+        } else if (task_prompt && task_prompt.trim().length > 0) {
+            try {
+                const existingQ = await db.query(
+                    'SELECT id FROM questions WHERE skill = $1 AND content = $2 LIMIT 1',
+                    [skill, task_prompt.trim()]
+                );
+                if (existingQ.rows.length === 0) {
+                    const newQ = await db.query(
+                        'INSERT INTO questions (skill, part, content, image_url) VALUES ($1, $2, $3, $4) RETURNING id',
+                        [skill, part_type, task_prompt.trim(), image_url || null]
+                    );
+                    if (!linkedQuestionId) linkedQuestionId = newQ.rows[0].id;
+                } else if (!linkedQuestionId) {
+                    linkedQuestionId = existingQ.rows[0].id;
+                }
+            } catch (qErr) {
+                console.warn('[Single Question DB Insert Warning]:', qErr.message);
             }
         }
 
@@ -128,7 +173,7 @@ exports.submitAssessment = async (req, res) => {
                  (question_id, skill, part_type, task_prompt, user_input_text, audio_path, image_url, status) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, 'processing') 
                  RETURNING *`,
-                [question_id || null, skill, part_type, effectivePrompt, effectiveInput, audio_path, image_url || task1_image || null]
+                [linkedQuestionId, skill, part_type, effectivePrompt, effectiveInput, audio_path, image_url || task1_image || null]
             );
             assessment = insertResult.rows[0];
         } catch (dbErr) {
@@ -138,7 +183,7 @@ exports.submitAssessment = async (req, res) => {
                  (question_id, skill, part_type, task_prompt, user_input_text, audio_path, status) 
                  VALUES ($1, $2, $3, $4, $5, $6, 'processing') 
                  RETURNING *`,
-                [question_id || null, skill, part_type, effectivePrompt, effectiveInput, audio_path]
+                [linkedQuestionId, skill, part_type, effectivePrompt, effectiveInput, audio_path]
             );
             assessment = insertFallback.rows[0];
         }

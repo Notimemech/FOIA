@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 /**
  * SpeakingTestSetupForm — custom setup interface for Speaking test configuration.
@@ -19,6 +19,28 @@ function SpeakingTestSetupForm({
   setTargetBand,
   onEnterRoom,
 }) {
+  const [part1Raw, setPart1Raw] = useState(
+    Array.isArray(part1Questions) ? part1Questions.join('\n') : (part1Questions || '')
+  );
+  const [part3Raw, setPart3Raw] = useState(
+    Array.isArray(part3Questions) ? part3Questions.join('\n') : (part3Questions || '')
+  );
+
+  const handleStart = () => {
+    const p1List = part1Raw
+      .split('\n')
+      .map((q) => q.trim())
+      .filter(Boolean);
+    const p3List = part3Raw
+      .split('\n')
+      .map((q) => q.trim())
+      .filter(Boolean);
+
+    setPart1Questions(p1List.length > 0 ? p1List : ['Describe your favorite hobby.']);
+    setPart3Questions(p3List.length > 0 ? p3List : ['Why is this topic important in society today?']);
+    onEnterRoom();
+  };
+
   return (
     <div className="st-container">
       <div className="st-setup-card">
@@ -58,8 +80,8 @@ function SpeakingTestSetupForm({
             <textarea
               className="st-textarea"
               rows={5}
-              value={part1Questions.join('\n')}
-              onChange={(e) => setPart1Questions(e.target.value.split('\n').filter(Boolean))}
+              value={part1Raw}
+              onChange={(e) => setPart1Raw(e.target.value)}
               placeholder="Enter 4-5 Part 1 questions..."
             />
           </div>
@@ -82,8 +104,8 @@ function SpeakingTestSetupForm({
               <textarea
                 className="st-textarea"
                 rows={4}
-                value={part3Questions.join('\n')}
-                onChange={(e) => setPart3Questions(e.target.value.split('\n').filter(Boolean))}
+                value={part3Raw}
+                onChange={(e) => setPart3Raw(e.target.value)}
                 placeholder="Enter 3 deep discussion questions..."
               />
             </div>
@@ -123,7 +145,7 @@ function SpeakingTestSetupForm({
           </div>
         </div>
 
-        <button type="button" className="st-btn-start" onClick={onEnterRoom}>
+        <button type="button" className="st-btn-start" onClick={handleStart}>
           🚀 Enter Speaking Test Room
         </button>
       </div>
@@ -132,3 +154,4 @@ function SpeakingTestSetupForm({
 }
 
 export default SpeakingTestSetupForm;
+

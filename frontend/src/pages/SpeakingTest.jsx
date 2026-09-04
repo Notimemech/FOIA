@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import LoadingSteps from '../components/LoadingSteps';
 import SpeakingQuestionModal from '../components/SpeakingQuestionModal';
 import SpeakingTestSetupForm from '../components/SpeakingTestSetupForm';
 import SpeakingPartSection from '../components/SpeakingPartSection';
-import { mergeAudioBlobs } from '../utils/audioUtils';
+import { mergeAudioBlobs, getHanoiTimestamp, generateSpeakingRecordName } from '../utils/audioUtils';
 import { getRandomPart1Set, getRandomPart23Set, getRandomFullTestSet } from '../utils/speakingQuestions';
 import '../style/speakingTest.css';
 
@@ -36,6 +36,9 @@ function SpeakingTest() {
   const [mode, setMode]           = useState(modeParam);
   const [targetBand, setTargetBand] = useState(7.0);
 
+  // Timestamp generated once when the test set is created
+  const [sessionTimestamp, setSessionTimestamp] = useState(() => getHanoiTimestamp());
+
   const [part1Questions, setPart1Questions] = useState([]);
   const [part2CueCard, setPart2CueCard]     = useState('');
   const [part3Questions, setPart3Questions] = useState([]);
@@ -51,6 +54,10 @@ function SpeakingTest() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Refresh session timestamp on new test creation
+    const newTs = getHanoiTimestamp();
+    setSessionTimestamp(newTs);
+
     if (sourceParam === 'random') {
       if (partParam === 'part1') {
         const s = getRandomPart1Set();
@@ -77,14 +84,69 @@ function SpeakingTest() {
     return () => { Object.values(audioUrls).forEach((url) => { if (url) URL.revokeObjectURL(url); }); };
   }, [audioUrls]);
 
+  const testTypeLabel = useMemo(() => {
+    if (partType === 'Part 1') return 'TestPart1';
+    if (partType === 'Part 2 & 3') return 'TestPart2&3';
+    return 'FullTest';
+  }, [partType]);
+
   const getOrderedQuestionList = () => {
     const list = [];
     if (partType === 'Part 1' || partType === 'Full Test') {
-      part1Questions.forEach((q, idx) => list.push({ key: `p1_${idx}`, title: `Part 1 - Question ${idx + 1}`, text: q, partType: 'part1' }));
+      part1Questions.forEach((q, idx) => {
+        const qNo = `Q${idx + 1}`;
+        const recordName = generateSpeakingRecordName({
+          testType: testTypeLabel,
+          part: 'P1',
+          qNo,
+          timestamp: sessionTimestamp,
+        });
+        list.push({
+          key: `p1_${idx}`,
+          title: `Part 1 - Question ${idx + 1}`,
+          text: q,
+          partType: 'part1',
+          partLabel: 'Part 1',
+          qNo,
+          recordName,
+        });
+      });
     }
     if (partType === 'Part 2 & 3' || partType === 'Full Test') {
-      list.push({ key: 'p2', title: 'Part 2 - Cue Card', text: part2CueCard, partType: 'part2' });
-      part3Questions.forEach((q, idx) => list.push({ key: `p3_${idx}`, title: `Part 3 - Q${idx + 1}`, text: q, partType: 'part3' }));
+      const p2RecordName = generateSpeakingRecordName({
+        testType: testTypeLabel,
+        part: 'P2',
+        qNo: 'Q1',
+        timestamp: sessionTimestamp,
+      });
+      list.push({
+        key: 'p2',
+        title: 'Part 2 - Cue Card',
+        text: part2CueCard,
+        partType: 'part2',
+        partLabel: 'Part 2',
+        qNo: 'Q1',
+        recordName: p2RecordName,
+      });
+
+      part3Questions.forEach((q, idx) => {
+        const qNo = `Q${idx + 1}`;
+        const recordName = generateSpeakingRecordName({
+          testType: testTypeLabel,
+          part: 'P3',
+          qNo,
+          timestamp: sessionTimestamp,
+        });
+        list.push({
+          key: `p3_${idx}`,
+          title: `Part 3 - Q${idx + 1}`,
+          text: q,
+          partType: 'part3',
+          partLabel: 'Part 3',
+          qNo,
+          recordName,
+        });
+      });
     }
     return list;
   };
@@ -129,8 +191,31 @@ function SpeakingTest() {
       formData.append('part_type', partType);
       formData.append('task_prompt', getCompiledTaskPrompt());
       formData.append('target_band', targetBand);
-      formData.append('audio', mergedAudioBlob || answeredBlobs[0], 'speaking_combined.wav');
-      Object.entries(audioAnswers).forEach(([key, blob]) => { if (blob) formData.append(`audio_${key}`, blob, `audio_${key}.wav`); });
+      formData.append('session_timestamp', sessionTimestamp);
+
+      // Construct detailed questions metadata for DB mapping
+      const questionsData = orderedList.map((item) => ({
+        id: item.key,
+        key: item.key,
+        title: item.title,
+        part: item.partLabel || item.partType,
+        question: item.text,
+        audio_field: `audio_${item.key}`,
+        record_name: item.recordName,
+      }));
+      formData.append('questions_json', JSON.stringify(questionsData));
+
+      // Append primary stream for AI scoring
+      formData.append('audio', mergedAudioBlob || answeredBlobs[0], `${testTypeLabel}_FullAudio_${sessionTimestamp}.wav`);
+
+      // Append each individual audio answer with its standard record name
+      orderedList.forEach((item) => {
+        const blob = audioAnswers[item.key];
+        if (blob) {
+          formData.append(`audio_${item.key}`, blob, `${item.recordName}.wav`);
+        }
+      });
+
       const res = await axios.post('http://localhost:5000/api/assessments/submit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -143,6 +228,7 @@ function SpeakingTest() {
   };
 
   if (loading) return <LoadingSteps steps={SPEAKING_STEPS} intervalMs={1600} />;
+
 
   if (isSetup) {
     return (

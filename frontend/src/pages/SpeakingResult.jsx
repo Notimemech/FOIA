@@ -117,12 +117,30 @@ function SpeakingResult() {
         ? activeQuestion.audio_url
         : `http://localhost:5000${activeQuestion.audio_url}`;
     }
+    const fieldKey = activeQuestion.audio_field || `audio_${activeQuestion.id || activeQuestion.key || selectedQIndex}`;
+    const mappedAudio = feedback.question_audios?.[fieldKey] || feedback.question_audios?.[activeQuestion.id];
+    if (mappedAudio) {
+      return mappedAudio.startsWith('http') ? mappedAudio : `http://localhost:5000${mappedAudio}`;
+    }
     if (result.audio_path) {
       return result.audio_path.startsWith('http')
         ? result.audio_path
         : `http://localhost:5000${result.audio_path}`;
     }
     return null;
+  };
+
+  const getActiveRecordName = () => {
+    if (activeQuestion.record_name) {
+      return `${activeQuestion.record_name}.wav`;
+    }
+    const activeUrl = getActiveAudioUrl();
+    if (activeUrl) {
+      const parts = activeUrl.split('/');
+      const last = parts[parts.length - 1];
+      if (last && last.endsWith('.wav')) return last;
+    }
+    return `Speaking_Q${selectedQIndex + 1}.wav`;
   };
 
   const getActiveTranscript = () => {
@@ -208,7 +226,14 @@ function SpeakingResult() {
                 <div key={item.id || idx} className={`sp-q-vertical-item ${idx === selectedQIndex ? 'active' : ''}`} onClick={() => setSelectedQIndex(idx)}>
                   <div className="sp-q-item-left">
                     <span className="sp-q-index-circle">{idx + 1}</span>
-                    <span className="sp-q-text">{item.question}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', overflow: 'hidden' }}>
+                      <span className="sp-q-text">{item.question}</span>
+                      {item.record_name && (
+                        <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>
+                          🎵 {item.record_name}.wav
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button type="button" className="sp-btn-detailed-analysis" onClick={(e) => { e.stopPropagation(); setSelectedQIndex(idx); }}>
                     Detailed analysis &gt;
@@ -219,22 +244,27 @@ function SpeakingResult() {
           </div>
 
           <div className="wr-essay-card wr-essay-answer">
-            <div className="wr-essay-label">
-              🎙️ Candidate Spoken Response & Recording (Question {selectedQIndex + 1})
+            <div className="wr-essay-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <span>🎙️ Candidate Spoken Response & Recording — Question {selectedQIndex + 1}</span>
+              {activeQuestion.record_name && (
+                <span style={{ fontSize: '0.75rem', background: '#334155', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '4px', fontFamily: 'monospace' }}>
+                  {activeQuestion.record_name}.wav
+                </span>
+              )}
             </div>
             <div className="sp-audio-player-wrapper">
               <div className="sp-audio-header">
-                <span className="sp-audio-player-label">🎧 Candidate Audio Recording:</span>
+                <span className="sp-audio-player-label">🎧 Question Audio Track:</span>
                 {getActiveAudioUrl() && (
                   <button type="button" className="sp-btn-download-audio"
-                    onClick={() => downloadAudio(getActiveAudioUrl(), `Speaking_Result_Q${selectedQIndex + 1}.wav`)}
+                    onClick={() => downloadAudio(getActiveAudioUrl(), getActiveRecordName())}
                     title="Download candidate recording">
                     📥 Download Recording
                   </button>
                 )}
               </div>
               {getActiveAudioUrl() ? (
-                <audio controls src={getActiveAudioUrl()} className="sp-audio-player-el" />
+                <audio key={getActiveAudioUrl()} controls src={getActiveAudioUrl()} className="sp-audio-player-el" />
               ) : (
                 <p className="sp-no-audio-text">No audio recording available for this question.</p>
               )}

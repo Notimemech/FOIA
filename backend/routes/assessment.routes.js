@@ -9,8 +9,13 @@ const storage = multer.diskStorage({
         cb(null, path.join(__dirname, '../public/uploads/'))
     },
     filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
+        if (file.originalname && file.originalname !== 'blob' && !file.originalname.startsWith('audio_blob')) {
+            const ext = path.extname(file.originalname) || '.wav';
+            const basename = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_&+-]/g, '_');
+            return cb(null, `${basename}${ext}`);
+        }
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + (path.extname(file.originalname) || '.wav'));
     }
 });
 const upload = multer({ storage: storage });

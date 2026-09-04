@@ -5,6 +5,7 @@ import RouletteCardDeck from '../components/RouletteCardDeck';
 import RouletteQuestionCard from '../components/RouletteQuestionCard';
 import SpeakingQuestionModal from '../components/SpeakingQuestionModal';
 import LoadingSteps from '../components/LoadingSteps';
+import { mergeAudioBlobs, getHanoiTimestamp, sanitizeRecordPart, generateSpeakingRecordName } from '../utils/audioUtils';
 import { SPEAKING_ROULETTE_DATA, getRandomRouletteTopic } from '../utils/speakingRouletteData';
 import '../style/speakingRoulette.css';
 
@@ -104,13 +105,34 @@ function SpeakingRoulette() {
 
     setIsGrading(true);
     try {
+      const ts = getHanoiTimestamp();
+      const topicName = sanitizeRecordPart(selectedTopic?.topic || 'GeneralTopic');
+      const recordName = generateSpeakingRecordName({
+        testType: 'Random',
+        part: topicName,
+        qNo: 'Q1',
+        timestamp: ts,
+      });
+
+      const questionsData = [{
+        id: 'p1_0',
+        key: 'p1_0',
+        title: `${selectedTopic?.part || 'Part 1'} - ${selectedTopic?.topic || 'Topic'}`,
+        part: selectedTopic?.part || 'Part 1',
+        question: selectedQuestion || selectedTopic?.topic || 'IELTS Speaking Question',
+        audio_field: 'audio_p1_0',
+        record_name: recordName,
+      }];
+
       const formData = new FormData();
       formData.append('skill', 'speaking');
       formData.append('part_type', selectedTopic?.part || 'Part 1');
       formData.append('task_prompt', selectedQuestion || selectedTopic?.topic || 'IELTS Speaking Question');
       formData.append('target_band', 7.0);
-      formData.append('audio', blob, 'roulette_response.wav');
-      formData.append('audio_p1_0', blob, 'roulette_response.wav');
+      formData.append('session_timestamp', ts);
+      formData.append('questions_json', JSON.stringify(questionsData));
+      formData.append('audio', blob, `${recordName}.wav`);
+      formData.append('audio_p1_0', blob, `${recordName}.wav`);
 
       const res = await axios.post('http://localhost:5000/api/assessments/submit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -118,13 +140,14 @@ function SpeakingRoulette() {
 
       setTimeout(() => {
         navigate(`/speaking/result/${res.data.id}`);
-      }, 7000);
+      }, 3000);
     } catch (err) {
       console.error('[Roulette Grading Error]:', err);
       alert('Grading failed. Please try again.');
       setIsGrading(false);
     }
   };
+
 
   // Filter history for current selected topic / prompt
   const topicAttempts = historyList.filter((item) => {

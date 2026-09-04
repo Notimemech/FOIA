@@ -139,3 +139,58 @@ export async function downloadAudio(audioUrl, filename = 'candidate_audio.wav') 
   }
 }
 
+/**
+ * Returns current timestamp in Hanoi (Asia/Ho_Chi_Minh GMT+7) formatted as YYYYMMDDHHmmss.
+ * Example: 20260904180930
+ */
+export function getHanoiTimestamp(date = new Date()) {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(date);
+    const getPart = (type) => parts.find((p) => p.type === type)?.value || '';
+    return `${getPart('year')}${getPart('month')}${getPart('day')}${getPart('hour')}${getPart('minute')}${getPart('second')}`;
+  } catch (e) {
+    // Fallback if Intl timeZone fails
+    const pad = (n) => String(n).padStart(2, '0');
+    const d = new Date(date.getTime() + (7 * 60 + date.getTimezoneOffset()) * 60000);
+    return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  }
+}
+
+/**
+ * Sanitizes a topic or part string for safe inclusion in record names.
+ */
+export function sanitizeRecordPart(partStr) {
+  if (!partStr) return 'P1';
+  return String(partStr)
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .trim() || 'P1';
+}
+
+/**
+ * Generates standardized speaking record name:
+ * TestType_Part_QNo_timestamp
+ * Examples:
+ * - TestPart1_P1_Q1_20260904180930
+ * - TestPart2&3_P2_Q1_20260904180930
+ * - FullTest_P3_Q2_20260904180930
+ * - Random_WalkingExercise_Q1_20260904180930
+ */
+export function generateSpeakingRecordName({ testType = 'TestPart1', part = 'P1', qNo = 'Q1', timestamp = '' }) {
+  const ts = timestamp || getHanoiTimestamp();
+  const cleanTestType = testType;
+  const cleanPart = part;
+  const cleanQNo = qNo.startsWith('Q') ? qNo : `Q${qNo}`;
+  return `${cleanTestType}_${cleanPart}_${cleanQNo}_${ts}`;
+}
+
+
