@@ -13,6 +13,14 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Lỗi Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Lỗi Uncaught Exception:', err);
+});
+
 // Ensure upload dir exists
 const uploadDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -28,6 +36,11 @@ app.use('/api/assessments', assessmentRoutes);
 
 app.get('/', (req, res) => {
     res.send('IELTS Examiner API is running');
+});
+
+app.use((err, req, res, next) => {
+    console.error("Lỗi lọt vào Express Middleware:", err.stack || err);
+    res.status(500).json({ error: 'Internal Server Error' });
 });
 
 app.listen(port, '0.0.0.0', () => {
