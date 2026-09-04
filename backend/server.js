@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
     res.send('IELTS Examiner API is running');
 });
 
-app.listen(port, process.env.BACKEND_URL, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
     // Load rubric context into memory (non-blocking, best-effort)
     const rubricService = require('./service/rubric.service');
