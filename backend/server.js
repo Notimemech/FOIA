@@ -13,6 +13,12 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+app.use((req, res, next) => {
+    console.log(`[ROUTE ĐANG GỌI] ${req.method} ${req.url}`);
+    console.log(`[BODY NHẬN ĐƯỢC]`, req.body);
+    next();
+});
+
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Lỗi Unhandled Rejection:', reason);
 });

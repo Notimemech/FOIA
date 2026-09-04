@@ -9,6 +9,10 @@ const pool = new Pool({
     port: process.env.DB_PORT || 5432,
 });
 
+pool.on('error', (err, client) => {
+    console.error('Lỗi ngầm từ client PostgreSQL:', err);
+});
+
 module.exports = {
     query: (text, params) => pool.query(text, params),
 };
