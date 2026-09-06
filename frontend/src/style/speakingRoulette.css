@@ -4,14 +4,16 @@
 
 /* Main canvas with green grid paper texture */
 .sr-page {
-  min-height: 100vh;
-  background-color: #485c42;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-  background-size: 32px 32px;
-  background-position: center center;
-  color: #f8fafc;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  overflow-y: auto;
+  background-color: var(--bg-main, #1A0B07);
+  background-image: none;
+  color: var(--text-body, #FFF1C9);
   padding: 1.5rem 1.25rem 4rem;
   box-sizing: border-box;
   font-family: var(--font-body, system-ui, sans-serif);
@@ -54,7 +56,7 @@
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  font-family: 'Georgia', 'Playfair Display', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 1.6rem;
   font-weight: 700;
   color: #ffffff;
@@ -113,7 +115,7 @@
   min-width: 110px;
 }
 .sr-part-tab strong {
-  font-family: 'Georgia', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 0.95rem;
   font-weight: 700;
   color: inherit;
@@ -147,8 +149,9 @@
 
 .sr-fan-container {
   position: relative;
-  width: 720px;
-  height: 380px;
+  width: 90vw;
+  max-width: 1200px;
+  height: 480px;
   margin-top: 1rem;
   display: flex;
   align-items: flex-end;
@@ -158,8 +161,8 @@
 
 .sr-fan-card {
   position: absolute;
-  width: 130px;
-  height: 200px;
+  width: 170px;
+  height: 260px;
   border-radius: 14px;
   padding: 0.8rem 0.6rem;
   box-sizing: border-box;
@@ -176,7 +179,7 @@
 }
 
 .sr-fan-card:hover {
-  transform: translateY(-32px) scale(1.08) !important;
+  transform: translateY(-40px) scale(1.1) !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
   z-index: 50 !important;
 }
@@ -195,7 +198,7 @@
 }
 
 .sr-fan-card-mark {
-  font-family: 'Georgia', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 2.4rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.7);
@@ -234,7 +237,7 @@
   border: none;
   padding: 0.95rem 2.5rem;
   border-radius: 36px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 1.15rem;
   font-weight: 700;
   cursor: pointer;
@@ -354,7 +357,7 @@
 
 /* Main Prompt */
 .sr-main-question {
-  font-family: 'Georgia', 'Playfair Display', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.28;
@@ -392,7 +395,7 @@
 }
 
 .sr-point-number {
-  font-family: 'Georgia', serif;
+  font-family: var(--font-heading, sans-serif);
   font-weight: 800;
   font-size: 1.05rem;
   color: rgba(255, 255, 255, 0.85);
@@ -426,7 +429,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 0.88rem;
   font-weight: 800;
   color: #ffffff;
@@ -612,7 +615,7 @@
 }
 
 .sr-rec-timer-badge {
-  font-family: 'Georgia', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 1.35rem;
   font-weight: 800;
   color: #f87171;
@@ -766,7 +769,7 @@
   border: none;
   padding: 0.75rem 1.75rem;
   border-radius: 24px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-heading, sans-serif);
   font-size: 0.96rem;
   font-weight: 700;
   cursor: pointer;

@@ -8,7 +8,7 @@ function RouletteCardDeck({ topics, onSelectCard, onSpinRandom, isSpinning }) {
 
   // Distribute cards in a radial arc
   const totalCards = topics.length || 15;
-  const maxAngle = 70; // total arc span in degrees
+  const maxAngle = 90; // wider arc span in degrees
   const angleStep = maxAngle / Math.max(1, totalCards - 1);
   const startAngle = -maxAngle / 2;
 
@@ -18,12 +18,12 @@ function RouletteCardDeck({ topics, onSelectCard, onSpinRandom, isSpinning }) {
         {topics.map((t, idx) => {
           const angle = startAngle + idx * angleStep;
           const rad = (angle * Math.PI) / 180;
-          const xOffset = Math.sin(rad) * 260;
-          const yOffset = -Math.cos(rad) * 40 + 40;
+          const xOffset = Math.sin(rad) * 450;
+          const yOffset = -Math.cos(rad) * 60 + 60;
 
           const spinTransform = isSpinning
-            ? `rotate(${angle + 720}deg) translate(${xOffset * 0.2}px, ${yOffset}px) scale(0.9)`
-            : `rotate(${angle}deg) translate(${xOffset}px, ${yOffset}px)`;
+            ? `translate(0px, 50px) scale(0.8) rotate(${Math.random() * 20 - 10}deg)`
+            : `translate(${xOffset}px, ${yOffset}px) rotate(${angle}deg)`;
 
           const colorCls = `sr-card-${t.colorTheme || 'sage'}`;
 
@@ -34,9 +34,7 @@ function RouletteCardDeck({ topics, onSelectCard, onSpinRandom, isSpinning }) {
               style={{
                 transform: spinTransform,
                 zIndex: hoveredIdx === idx ? 99 : idx + 1,
-                transition: isSpinning
-                  ? `transform 1s cubic-bezier(0.2, 0.8, 0.2, 1) ${idx * 0.03}s`
-                  : 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transition: 'transform 0.4s ease-out, box-shadow 0.2s ease',
               }}
               onMouseEnter={() => setHoveredIdx(idx)}
               onMouseLeave={() => setHoveredIdx(null)}

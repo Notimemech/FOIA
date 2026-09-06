@@ -170,7 +170,7 @@ function SpeakingRoulette() {
     <div className="sr-page">
       {/* Top Bar */}
       <div className="sr-topbar">
-        <Link to="/speaking/test" className="sr-back-btn" title="Back to Speaking Hub">
+        <Link to="/speaking" className="sr-back-btn" title="Back to Speaking Hub">
           ←
         </Link>
         <div className="sr-logo-title">
