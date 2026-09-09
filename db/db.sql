@@ -65,7 +65,7 @@ VALUES
 ('anthropic', 'claude-3-5-sonnet-20241022', 'Anthropic Claude 3.5 Sonnet', 'cloud', NULL, 'ANTHROPIC_API_KEY', false, true, 3, true),
 
 -- 4. Dự phòng 2 khi hết quota model chính
-('google', 'gemini-2.0-flash', 'Google Gemini 2.0 Flash (Fallback)', 'cloud', NULL, 'GEMINI_API_KEY', true, true, 4, true)
+('google', 'gemini-2.0-flash', 'Google Gemini 2.0 Flash (Fallback)', 'cloud', NULL, 'GEMINI_API_KEY', true, true, 4, true);
 
 
 -- 5. BẢNG SPEAKING ROULETTE TOPICS & QUESTIONS

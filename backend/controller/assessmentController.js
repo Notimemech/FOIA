@@ -46,7 +46,8 @@ exports.uploadImage = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'No image file uploaded' });
         }
-        const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+        const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
         res.json({ imageUrl, filename: req.file.filename });
     } catch (err) {
         console.error('[Upload Image Error]:', err.message);
