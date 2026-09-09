@@ -342,3 +342,86 @@ exports.generateSampleEssay = async (req, res) => {
     }
 };
 
+exports.regradeAssessment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query('SELECT * FROM assessments WHERE id = $1', [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Assessment not found' });
+        }
+        
+        const assessment = result.rows[0];
+        
+        // Ensure feedback is an object
+        let originalFeedback = {};
+        if (typeof assessment.feedback === 'string') {
+            try { originalFeedback = JSON.parse(assessment.feedback); } catch(e) {}
+        } else {
+            originalFeedback = assessment.feedback || {};
+        }
+
+        const options = {
+            part_type: assessment.part_type,
+            target_band: assessment.target_band,
+            image_url: assessment.image_url,
+            task1_prompt: originalFeedback.task1_prompt,
+            task1_input: originalFeedback.task1_input,
+            task1_image: originalFeedback.task1_image,
+            task2_prompt: originalFeedback.task2_prompt,
+            task2_input: originalFeedback.task2_input
+        };
+
+        const aiResult = await aiService.gradeAndCrossCheck(
+            assessment.test_type,
+            assessment.task_prompt,
+            assessment.user_input_text,
+            assessment.audio_path,
+            options
+        );
+        
+        let finalFeedback = {};
+        if (typeof aiResult.feedback === 'string') {
+            try { finalFeedback = JSON.parse(aiResult.feedback); } catch (e) { finalFeedback = { raw_text: aiResult.feedback }; }
+        } else {
+            finalFeedback = aiResult.feedback || {};
+        }
+        
+        // Keep inputs in feedback for Full Test
+        if (assessment.part_type === 'Full Test') {
+            finalFeedback.task1_prompt = originalFeedback.task1_prompt;
+            finalFeedback.task1_input = originalFeedback.task1_input;
+            finalFeedback.task1_image = originalFeedback.task1_image;
+            finalFeedback.task2_prompt = originalFeedback.task2_prompt;
+            finalFeedback.task2_input = originalFeedback.task2_input;
+            // Preserve sample_rewrites if they exist
+            if (originalFeedback.task1_feedback?.sample_rewrite && finalFeedback.task1_feedback) {
+                finalFeedback.task1_feedback.sample_rewrite = originalFeedback.task1_feedback.sample_rewrite;
+            }
+            if (originalFeedback.task2_feedback?.sample_rewrite && finalFeedback.task2_feedback) {
+                finalFeedback.task2_feedback.sample_rewrite = originalFeedback.task2_feedback.sample_rewrite;
+            }
+        } else {
+            if (originalFeedback.sample_rewrite) finalFeedback.sample_rewrite = originalFeedback.sample_rewrite;
+            if (originalFeedback.sample_answer) finalFeedback.sample_answer = originalFeedback.sample_answer;
+        }
+        
+        const updateResult = await db.query(
+            `UPDATE assessments 
+             SET overall_band = $1, sub_scores = $2, feedback = $3 
+             WHERE id = $4 RETURNING *`,
+            [
+                aiResult.overall_band,
+                aiResult.sub_scores,
+                finalFeedback,
+                id
+            ]
+        );
+        
+        res.status(200).json(updateResult.rows[0]);
+    } catch (err) {
+        console.error('[Regrade Assessment Error]:', err.message);
+        res.status(500).json({ error: 'Failed to regrade assessment' });
+    }
+};
+

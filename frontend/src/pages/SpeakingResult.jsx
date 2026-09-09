@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getAssessmentById, generateSample } from '../services/api';
+import { getAssessmentById, generateSample, regradeAssessment } from '../services/api';
 import { getScoreColor } from '../utils/scoreColor';
 import { downloadAudio } from '../utils/audioUtils';
 import { SPEAKING_CATEGORY_META } from '../utils/speakingMeta';
@@ -16,6 +16,7 @@ function SpeakingResult() {
   const navigate = useNavigate();
   const [result, setResult]                 = useState(null);
   const [loading, setLoading]               = useState(true);
+  const [regrading, setRegrading]           = useState(false);
   const [selectedQIndex, setSelectedQIndex] = useState(0);
   const [activePanel, setActivePanel]       = useState('criteria');
   const [activeCategory, setActiveCategory] = useState('Fluency & Coherence');
@@ -73,11 +74,11 @@ function SpeakingResult() {
     }
   };
 
-  if (loading) {
+  if (loading || regrading) {
     return (
       <div className="wr-loading">
         <div className="wr-loading-spinner" />
-        <p>Loading Speaking assessment report...</p>
+        <p>{regrading ? 'Regrading Speaking assessment...' : 'Loading Speaking assessment report...'}</p>
       </div>
     );
   }
@@ -170,6 +171,20 @@ function SpeakingResult() {
     return result.sub_scores?.[key] ?? feedback[cat]?.score ?? '—';
   };
 
+  const handleRegrade = async () => {
+    if (!window.confirm('Are you sure you want to regrade this assessment with the latest AI model? This may take up to 20 seconds.')) return;
+    setRegrading(true);
+    try {
+      const res = await regradeAssessment(id);
+      setResult(res.data);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to regrade assessment. Please try again.');
+    } finally {
+      setRegrading(false);
+    }
+  };
+
   const isFullTestResult = result.part_type === 'Full Test' || (result.part_type || '').toLowerCase().includes('full');
 
   return (
@@ -181,7 +196,10 @@ function SpeakingResult() {
           <span>IELTS Speaking Evaluation Report</span>
           <span className="wr-topbar-type">{result.part_type}</span>
         </div>
-        <Link to="/history" className="wr-history-btn">📋 Submission History</Link>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleRegrade} className="wr-history-btn" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', cursor: 'pointer' }}>🔄 Regrade</button>
+          <Link to="/history" className="wr-history-btn">📋 Submission History</Link>
+        </div>
       </div>
 
       {/* Target Band Banner */}

@@ -67,14 +67,30 @@ Return ONLY the following JSON — strictly valid JSON, no markdown outside:
   }
 }
 
-STRICT RULES:
-- Calculate real scores based on the candidate's actual text length (${wordCount} words) and quality using Band 0 to 9 descriptors.
-- overall_band = average of TA, CC, LR, GRA rounded to nearest 0.5.
-- Every score must be a number between 0.0 and 9.0 in 0.5 increments (e.g. 0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, ..., 9.0).
-- Do NOT artificially inflate scores for short or underlength text.
-- Every comment must quote or reference specific phrases from the candidate's report.
-- All comments must be written in English.
-- Do NOT use markdown inside JSON string values`;
+STRICT EXAMINER CALIBRATION & GRADING RULES (PREVENT LENIENT SCORING):
+1. Task Achievement (TA):
+   - Assess if key features are selected, sufficient detail is provided, reporting is accurate, and data is compared/contrasted.
+   - If the candidate simply lists data mechanically without comparing or identifying trends, TA MUST NOT exceed Band 5.5 - 6.0.
+   - If the response does not include a clear overview of main trends, or fails to support descriptions with data/figures, TA MUST NOT exceed Band 5.0.
+2. Coherence & Cohesion (CC):
+   - Assess logical progression, paragraphing, and cohesive devices.
+   - If cohesive devices are mechanical, faulty, or overused, CC MUST NOT exceed Band 6.0.
+   - If paragraphing is inadequate or missing, CC MUST NOT exceed Band 5.0.
+3. Lexical Resource (LR):
+   - Assess vocabulary range, precision, collocations, spelling.
+   - Penalize generic vocabulary. Band 7.0+ requires less common vocabulary and awareness of style.
+   - Frequent spelling errors that cause difficulty for the reader must cap LR at Band 5.0 - 5.5.
+4. Grammatical Range & Accuracy (GRA):
+   - Assess range of structures (simple/compound/complex), accuracy, punctuation.
+   - If grammatical errors are frequent or cause communication breakdown, GRA MUST NOT exceed Band 5.0 - 5.5. Band 7.0 requires frequent error-free sentences.
+5. Overall Calibration:
+   - Calculate real scores based on the candidate's actual text length (${wordCount} words) and quality using Band 0 to 9 descriptors.
+   - overall_band = average of TA, CC, LR, GRA rounded to nearest 0.5.
+   - Every score must be a number between 0.0 and 9.0 in 0.5 increments.
+   - Do NOT artificially inflate scores for short or underlength text. Most intermediate essays genuinely fall in the Band 5.0 - 6.0 range.
+   - Every comment must quote or reference specific phrases from the candidate's report.
+   - All comments must be written in English.
+   - Do NOT use markdown inside JSON string values`;
 };
 
 const buildGradingPromptTask2 = (taskPrompt, userInput, targetBand) => {
@@ -133,14 +149,30 @@ Return ONLY the following JSON — strictly valid JSON, no markdown outside:
   }
 }
 
-STRICT RULES:
-- Calculate real scores based on the candidate's actual text length (${wordCount} words) and quality using Band 0 to 9 descriptors.
-- overall_band = average of TR, CC, LR, GRA rounded to nearest 0.5.
-- Every score must be a number between 0.0 and 9.0 in 0.5 increments (e.g. 0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, ..., 9.0).
-- Do NOT artificially inflate scores for short or underlength text.
-- Every comment must quote or reference specific phrases from the candidate's essay.
-- All comments must be written in English.
-- Do NOT use markdown inside JSON string values`;
+STRICT EXAMINER CALIBRATION & GRADING RULES (PREVENT LENIENT SCORING):
+1. Task Response (TR):
+   - Assess position formulation, idea extension, relevance, and conclusions.
+   - If the candidate does not address all parts of the prompt, lacks a clear position throughout, or fails to formulate conclusions, TR MUST NOT exceed Band 6.0.
+   - If ideas are not sufficiently extended or supported with relevant evidence, or the conclusion is unclear/repetitive, TR MUST NOT exceed Band 6.0.
+2. Coherence & Cohesion (CC):
+   - Assess logical progression, paragraphing, and cohesive devices.
+   - If cohesive devices are mechanical, faulty, or overused, CC MUST NOT exceed Band 6.0.
+   - If paragraphing is inadequate or missing, CC MUST NOT exceed Band 5.0.
+3. Lexical Resource (LR):
+   - Assess vocabulary range, precision, collocations, spelling.
+   - Penalize generic vocabulary. Band 7.0+ requires less common vocabulary and awareness of style.
+   - Frequent spelling errors that cause difficulty for the reader must cap LR at Band 5.0 - 5.5.
+4. Grammatical Range & Accuracy (GRA):
+   - Assess range of structures (simple/compound/complex), accuracy, punctuation.
+   - If grammatical errors are frequent or cause communication breakdown, GRA MUST NOT exceed Band 5.0 - 5.5. Band 7.0 requires frequent error-free sentences.
+5. Overall Calibration:
+   - Calculate real scores based on the candidate's actual text length (${wordCount} words) and quality using Band 0 to 9 descriptors.
+   - overall_band = average of TR, CC, LR, GRA rounded to nearest 0.5.
+   - Every score must be a number between 0.0 and 9.0 in 0.5 increments.
+   - Do NOT artificially inflate scores for short or underlength text. Most intermediate essays genuinely fall in the Band 5.0 - 6.0 range.
+   - Every comment must quote or reference specific phrases from the candidate's essay.
+   - All comments must be written in English.
+   - Do NOT use markdown inside JSON string values`;
 };
 
 const buildImprovementsPrompt = (partType, taskPrompt, userInput, overallBand, targetBand) => {

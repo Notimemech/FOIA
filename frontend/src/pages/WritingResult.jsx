@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getAssessmentById, generateSample } from '../services/api';
+import { getAssessmentById, generateSample, regradeAssessment } from '../services/api';
 import { getScoreColor } from '../utils/scoreColor';
 import { formatFeedbackText } from '../utils/feedbackFormatter';
 import WritingResultPanels from '../components/WritingResultPanels';
@@ -37,6 +37,7 @@ function WritingResult() {
   const navigate = useNavigate();
   const [result, setResult]   = useState(null);
   const [loading, setLoading] = useState(true);
+  const [regrading, setRegrading] = useState(false);
   const [fullTestView, setFullTestView] = useState('overview');
   const [activePanel, setActivePanel]   = useState('criteria');
   const [activeCategory, setActiveCategory] = useState('Task Response');
@@ -68,11 +69,11 @@ function WritingResult() {
     fetch();
   }, [id, navigate]);
 
-  if (loading) {
+  if (loading || regrading) {
     return (
       <div className="wr-loading">
         <div className="wr-loading-spinner" />
-        <p>Loading assessment report...</p>
+        <p>{regrading ? 'Regrading assessment...' : 'Loading assessment report...'}</p>
       </div>
     );
   }
@@ -151,6 +152,20 @@ function WritingResult() {
     }
   };
 
+  const handleRegrade = async () => {
+    if (!window.confirm('Are you sure you want to regrade this assessment with the latest AI model? This may take up to 20 seconds.')) return;
+    setRegrading(true);
+    try {
+      const res = await regradeAssessment(id);
+      setResult(res.data);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to regrade assessment. Please try again.');
+    } finally {
+      setRegrading(false);
+    }
+  };
+
   const getSubScore = (cat) => {
     const key = CATEGORY_META[cat]?.subKey;
     if (!key) return '—';
@@ -166,7 +181,10 @@ function WritingResult() {
           <span>IELTS Writing Evaluation Report</span>
           <span className="wr-topbar-type">{result.part_type}</span>
         </div>
-        <Link to="/history" className="wr-history-btn">📋 Submission History</Link>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleRegrade} className="wr-history-btn" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', cursor: 'pointer' }}>🔄 Regrade</button>
+          <Link to="/history" className="wr-history-btn">📋 Submission History</Link>
+        </div>
       </div>
 
       {/* Target Band Banner */}

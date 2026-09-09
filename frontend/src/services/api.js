@@ -24,4 +24,8 @@ export const generateSample = (id, data) => {
   return api.post(`/assessments/${id}/generate-sample`, data);
 };
 
+export const regradeAssessment = (id) => {
+  return api.post(`/assessments/${id}/regrade`);
+};
+
 export default api;
