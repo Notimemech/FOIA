@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { getScoreColor } from '../utils/scoreColor';
 
@@ -36,27 +35,48 @@ function HistoryTableRow({ item }) {
   const overall = Number(item.overall_band || 0);
   const task1Score = item.sub_scores?.Task1_Overall ?? item.sub_scores?.TA;
   const task2Score = item.sub_scores?.Task2_Overall ?? item.sub_scores?.TR;
+  const overallColor = getScoreColor(overall);
+
+  const statusClass = isFullTest
+    ? 'hs-status-full'
+    : isSpeaking
+      ? 'hs-status-speaking'
+      : item.part_type === 'Task 1'
+        ? 'hs-status-task1'
+        : 'hs-status-task2';
+
+  const bandStyle = (score) => {
+    const c = getScoreColor(score);
+    return {
+      color: c,
+      borderColor: c,
+      background: `color-mix(in srgb, ${c} 14%, transparent)`,
+    };
+  };
 
   return (
     <tr className="hs-table-row">
       {/* 1. Bài thi */}
-      <td>
+      <td data-label="Bài thi">
         <div className="hs-cell-test">
-          <div className="hs-test-icon">{isSpeaking ? '🎙️' : '📄'}</div>
+          <div className={`hs-test-icon ${isSpeaking ? 'speaking' : 'writing'}`} aria-hidden="true">
+            {isSpeaking ? '🎙️' : '📄'}
+          </div>
           <div className="hs-test-info">
             <span className="hs-test-name">{testTitle}</span>
-            <span className="hs-test-category">
-              • {isRealExam ? 'REAL TEST' : 'ACADEMIC'}
+            <span className={`hs-test-category ${isRealExam ? 'real' : 'academic'}`}>
+              <span className="hs-category-dot" aria-hidden="true" />
+              {isRealExam ? 'REAL TEST' : 'ACADEMIC'}
             </span>
           </div>
         </div>
       </td>
 
       {/* 2. Chủ đề */}
-      <td>
+      <td data-label="Chủ đề">
         <div className="hs-cell-topic">
           <div className="hs-topic-badge">
-            <span className="hs-topic-dot">●</span>
+            <span className="hs-topic-dot" aria-hidden="true">●</span>
             <strong>{item.part_type}:</strong>
           </div>
           <p className="hs-topic-text" title={item.task_prompt}>
@@ -66,73 +86,69 @@ function HistoryTableRow({ item }) {
       </td>
 
       {/* 3. Ngày làm bài */}
-      <td>
+      <td data-label="Ngày làm bài">
         <div className="hs-cell-date">
           <span className="hs-date-main">{dateTime}</span>
           <span className="hs-date-sub">
-            <span className="hs-clock-icon">🕒</span> {time}
+            <span className="hs-clock-icon" aria-hidden="true">🕒</span> {time}
           </span>
         </div>
       </td>
 
       {/* 4. Trạng thái */}
-      <td>
-        <span className="hs-status-badge">
-          <span className="hs-check-icon">✔</span> {item.part_type || 'Hoàn thành'}
+      <td data-label="Trạng thái">
+        <span className={`hs-status-badge ${statusClass}`}>
+          <span className="hs-status-dot" aria-hidden="true" />
+          {item.part_type || 'Hoàn thành'}
         </span>
       </td>
 
       {/* 5. Điểm số */}
-      <td>
+      <td data-label="Điểm số">
         <div className="hs-cell-scores">
           {isFullTest ? (
             <>
               {task1Score && (
                 <div className="hs-score-row">
-                  <span className="hs-score-lbl">Task 1:</span>
-                  <strong className="hs-score-val" style={{ color: getScoreColor(task1Score) }}>
+                  <span className="hs-score-lbl">Task 1</span>
+                  <strong className="hs-score-val" style={bandStyle(task1Score)}>
                     {Number(task1Score).toFixed(1)}
                   </strong>
                 </div>
               )}
               {task2Score && (
                 <div className="hs-score-row">
-                  <span className="hs-score-lbl">Task 2:</span>
-                  <strong className="hs-score-val" style={{ color: getScoreColor(task2Score) }}>
+                  <span className="hs-score-lbl">Task 2</span>
+                  <strong className="hs-score-val" style={bandStyle(task2Score)}>
                     {Number(task2Score).toFixed(1)}
                   </strong>
                 </div>
               )}
               <div className="hs-score-row total">
-                <span className="hs-score-lbl">Tổng:</span>
-                <strong className="hs-score-val total" style={{ color: getScoreColor(overall) }}>
+                <span className="hs-score-lbl">Tổng</span>
+                <strong className="hs-band-pill" style={bandStyle(overall)}>
                   {overall > 0 ? overall.toFixed(1) : '—'}
                 </strong>
               </div>
             </>
           ) : (
-            <>
-              <div className="hs-score-row">
-                <span className="hs-score-lbl">{item.part_type || 'Task'}:</span>
-                <strong className="hs-score-val" style={{ color: getScoreColor(overall) }}>
-                  {overall > 0 ? overall.toFixed(1) : '—'}
-                </strong>
-              </div>
-              <div className="hs-score-row total">
-                <span className="hs-score-lbl">Tổng:</span>
-                <strong className="hs-score-val total" style={{ color: getScoreColor(overall) }}>
-                  {overall > 0 ? overall.toFixed(1) : '—'}
-                </strong>
-              </div>
-            </>
+            <div className="hs-score-row total">
+              <span className="hs-score-lbl">Overall</span>
+              <strong
+                className="hs-band-pill hs-band-single"
+                style={{ ...bandStyle(overall), borderColor: overallColor }}
+              >
+                {overall > 0 ? overall.toFixed(1) : '—'}
+              </strong>
+            </div>
           )}
         </div>
       </td>
 
       {/* 6. Thao tác */}
-      <td style={{ textAlign: 'center' }}>
-        <Link to={detailUrl} className="hs-btn-detail">
-          <span>👁</span> Chi tiết
+      <td data-label="Thao tác" style={{ textAlign: 'center' }}>
+        <Link to={detailUrl} className="hs-btn-detail" aria-label={`Xem chi tiết ${testTitle}`}>
+          <span aria-hidden="true">👁</span> Chi tiết
         </Link>
       </td>
     </tr>
